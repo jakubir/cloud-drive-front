@@ -1,0 +1,44 @@
+<main class="flex justify-center items-center h-3/4">
+    <div>
+        <div class="text-center">
+            <fa-icon [icon]="faCloud" class="text-emerald-600" size="3x" />
+        </div>
+        <h2 class="px-6 mt-4 text-center text-2xl font-bold tracking-tight text-gray-900">
+            Zaloguj się na swoje konto
+        </h2>
+        <form 
+            class="flex flex-col gap-5 mt-10 w-full" 
+            #form="ngForm"
+            (ngSubmit)="submit(form)"
+        >
+            <label class="text-sm font-medium leading-6 text-gray-900">
+                Adres email
+                <input 
+                    name="email" 
+                    type="email" 
+                    autocomplete="email" 
+                    required 
+                    class="w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
+                    ngModel
+                >
+            </label>
+            <label class="w-full text-sm font-medium leading-6 text-gray-900">
+                Hasło
+                <input 
+                    name="password" 
+                    type="password" 
+                    autocomplete="current-password" 
+                    required 
+                    class="w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
+                    ngModel
+                >
+            </label>
+            <button 
+                type="submit" 
+                class="flex justify-center w-full py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold leading-6 text-white shadow-sm"
+            >
+                Zaloguj się
+            </button>
+        </form>
+    </div>
+</main>
