@@ -6,38 +6,81 @@
         <h2 class="px-6 mt-4 text-center text-2xl font-bold tracking-tight text-gray-900">
             Zaloguj się na swoje konto
         </h2>
-        <form 
-            class="flex flex-col gap-5 mt-10 w-full" 
-            #form="ngForm"
-            (ngSubmit)="submit(form)"
+        <div
+          [ngClass]="{'h-5': token.error != 200}"
+          class="text-rose-500 font-semibold text-sm text-center mt-5"
         >
-            <label class="text-sm font-medium leading-6 text-gray-900">
+          @if (token.error == 401) {
+
+              Niepoprawne dane logowania
+
+          } @else if (token.error != 200) {
+            <div class="relative">
+              <div class="absolute -top-4">
+                Wystąpił problem z połączeniem, proszę spróbować ponownie póżniej
+              </div>
+            </div>
+          }
+        </div>
+        <form
+            class="flex flex-col gap-5 w-full"
+            [ngClass]="{'mt-10': token.error == 200}"
+            #form="ngForm"
+            (ngSubmit)="submit(form, email, password)"
+        >
+            <label class="font-medium leading-6 text-gray-900 text-sm">
+              <div class="flex items-center justify-between">
                 Adres email
-                <input 
-                    name="email" 
-                    type="email" 
-                    autocomplete="email" 
-                    required 
+                <div class="text-rose-500 text-xs" *ngIf="(email.touched && email.errors?.['required']) || emailNotValid">
+                  Pole nie może być puste. Podaj email.
+                </div>
+                <div class="text-rose-500 text-xs" *ngIf="email.touched && email.invalid && !email.errors?.['required']">
+                  Podaj prawidłowy adres email.
+                </div>
+              </div>
+                <input
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    required
                     class="w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
+                    [ngClass]="{'ring-rose-500': (email.touched && (email.errors?.['required'] || email.invalid)) || emailNotValid}"
+                    (keydown)="removeErrorMessage(true)"
+                    [email]="true"
                     ngModel
+                    #email="ngModel"
                 >
             </label>
-            <label class="w-full text-sm font-medium leading-6 text-gray-900">
-                Hasło
-                <input 
-                    name="password" 
-                    type="password" 
-                    autocomplete="current-password" 
-                    required 
+            <label class="w-full font-medium leading-6 text-gray-900 text-sm">
+                <div class="flex items-center justify-between">
+                  Hasło
+                  <div class="text-rose-500 text-xs" *ngIf="(password.touched && password.errors?.['required']) || passwordNotValid">
+                    Pole nie może być puste. Podaj hasło.
+                  </div>
+                </div>
+                <input
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                    required
                     class="w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600 sm:text-sm sm:leading-6"
-                    ngModel
+                    [ngClass]="{'ring-rose-500': (password.touched && password.errors?.['required']) || passwordNotValid}"
+                    (keydown)="removeErrorMessage()"
+                    [(ngModel)]="passwordField"
+                    #password="ngModel"
                 >
             </label>
-            <button 
-                type="submit" 
-                class="flex justify-center w-full py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold leading-6 text-white shadow-sm"
+            <button
+                type="submit"
+                class="flex justify-center w-full py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold leading-6 text-white shadow-sm"
+                [ngClass]="{'bg-gray-600': token.formSubmitted, 'hover:bg-gray-600': token.formSubmitted}"
+                [disabled]="token.formSubmitted"
             >
+              @if (token.formSubmitted) {
+                <fa-icon [icon]="faSpinner" class="animate-spin text-white" size="lg" />
+              } @else {
                 Zaloguj się
+              }
             </button>
         </form>
     </div>
