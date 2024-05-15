@@ -104,17 +104,37 @@ export class FilesService {
 
     this.router.navigateByUrl(`/${locationId}`);
     this.path = path;
-    this.pathFileTree = this.fileTreeFromPath();
+    this.pathFileTree = this.sortFileList(this.fileTreeFromPath());
     this.title.setTitle(`${this.path.replace('root', 'Twój dysk').split('/')[this.path.replace('root', 'Twój dysk').split('/').length - 1]} - J\'Drive`);
   }
 
-  sortFileList(sortBy: 'name' | 'date' | 'size' = 'name', order: 'ASC' | 'DESC' = 'ASC') {
-    this.auth.renewToken();
+  sortFileList(fileList: File[], recursive = false, sortBy: 'name' | 'date' | 'size' = 'name', order: 'ASC' | 'DESC' = 'ASC') {
 
-    let directories = this.fileTree.children.filter((file) => file.type == 'directory');
-    let files = this.fileTree.children.filter((file) => file.type == 'file');
+    let directories = fileList.filter((file) => file.type == 'directory');
+    let files = fileList.filter((file) => file.type == 'file');
 
-    this.fileTree.children = [...directories, ...files];
+    if (sortBy == 'name') {
+      directories.sort((a, b) => a.name.localeCompare(b.name));
+      files.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy == 'date') {
+      directories.sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+      files.sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+    } else if (sortBy == 'size') {
+      directories.sort((a, b) => a.size! - b.size!);
+      files.sort((a, b) => a.size! - b.size!);
+    }
+
+    if (order == 'DESC') {
+      directories.reverse()
+      files.reverse()
+    }
+
+    if (recursive)
+      directories.map((file) => file.children = this.sortFileList(file.children, true, sortBy, order));
+
+    fileList = [...directories, ...files];
+
+    return fileList;
   }
 
   getFileList() {
@@ -132,6 +152,7 @@ export class FilesService {
         const buf = Buffer.from(this.router.url.substring(1).replaceAll('_', '/').replaceAll('-', '+'), 'base64');
 
         this.fileTree = data;
+        this.fileTree.children = this.sortFileList(this.fileTree.children, true);
 
         this.path = buf.toString('utf8');
         this.pathFileTree = this.fileTreeFromPath();

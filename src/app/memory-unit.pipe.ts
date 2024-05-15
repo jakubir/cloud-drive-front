@@ -9,7 +9,7 @@ export class MemoryUnitPipe implements PipeTransform {
   transform(value: number, ...args: unknown[]): string {
     if (value == 1) 
       return value + ' bajt';
-    else if (value < 5) 
+    else if (0 < value && value < 5) 
       return value + ' bajty';
     else if (value < 1024)
       return value + ' bajtów';

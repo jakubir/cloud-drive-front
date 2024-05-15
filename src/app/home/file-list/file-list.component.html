@@ -23,16 +23,50 @@
         class="bg-white px-10 py-6 rounded-lg grid grid-cols-[2rem_minmax(16.666%,_min-content)_10%_auto] gap-4"
     >
             <div></div>
-            <div class="min-w-52 font-semibold hover:underline underline-offset-2 cursor-pointer">
-                Nazwa
+            <div
+                class="min-w-52 font-semibold group underline-offset-2 cursor-pointer"
+                [title]="
+                    currentSort.sortBy == 'name' ?
+                    'Sortuj po nazwie (' + (currentSort.order == 'ASC' ? 'A-Z' : 'Z-A') + ')' :
+                    ''
+                "
+            >
+                <button (click)="sort('name')">
+                    <span class="group-hover:underline pr-1.5">Nazwa</span>
+                    @if (currentSort.sortBy == 'name') {
+                        <fa-icon [icon]="faArrow" />
+                    }
+                </button>
             </div>
             <div
-                class="font-semibold hover:underline underline-offset-2 cursor-pointer">
-                Data
+                class="font-semibold group underline-offset-2 cursor-pointer"
+                [title]="
+                    currentSort.sortBy == 'date' ?
+                    'Sortuj po dacie ' + (currentSort.order == 'ASC' ? 'od najstarszej do najnowszej' : 'od najnowszej do najstarszej') :
+                    ''
+                "
+            >
+                <button (click)="sort('date')">
+                    <span class="group-hover:underline pr-1.5">Data</span>
+                    @if (currentSort.sortBy == 'date') {
+                        <fa-icon [icon]="faArrow" />
+                    }
+                </button>
             </div>
             <div
-                class="font-semibold hover:underline underline-offset-2 cursor-pointer">
-                Rozmiar pliku
+                class="font-semibold group underline-offset-2 cursor-pointer"
+                [title]="
+                    currentSort.sortBy == 'size' ?
+                    'Sortuj po rozmiarze ' + (currentSort.order == 'ASC' ? 'od najmniejszego do największego' : 'od największego do najmniejszego') :
+                    ''
+                "
+            >
+                <button (click)="sort('size')">
+                    <span class="group-hover:underline pr-1.5">Rozmiar pliku</span>
+                    @if (currentSort.sortBy == 'size') {
+                        <fa-icon [icon]="faArrow" />
+                    }
+                </button>
             </div>
 
         @for (file of files.pathFileTree; track $index) {
@@ -61,8 +95,11 @@
                     {{file.name}}
                 </div>
                 <div class="pl-0.5">
-                    {{getLatestChangeDate(file) | date:'shortDate'}}</div>
-                <div></div>
+                    {{getLatestChangeDate(file) | date:'shortDate'}}
+                </div>
+                <div class="pl-0.5">
+                  {{file.size! | memoryUnit}}
+                </div>
 
             }
 
