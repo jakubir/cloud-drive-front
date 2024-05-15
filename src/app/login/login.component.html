@@ -7,14 +7,14 @@
             Zaloguj się na swoje konto
         </h2>
         <div
-          [ngClass]="{'h-5': token.error != 200}"
+          [ngClass]="{'h-5': auth.loginRequestStatus != 200}"
           class="text-rose-500 font-semibold text-sm text-center mt-5"
         >
-          @if (token.error == 401) {
+          @if (auth.loginRequestStatus == 401) {
 
               Niepoprawne dane logowania
 
-          } @else if (token.error != 200) {
+          } @else if (auth.loginRequestStatus != 200) {
             <div class="relative">
               <div class="absolute -top-4">
                 Wystąpił problem z połączeniem, proszę spróbować ponownie póżniej
@@ -24,7 +24,7 @@
         </div>
         <form
             class="flex flex-col gap-5 w-full"
-            [ngClass]="{'mt-10': token.error == 200}"
+            [ngClass]="{'mt-10': auth.loginRequestStatus == 200}"
             #form="ngForm"
             (ngSubmit)="submit(form, email, password)"
         >
@@ -73,10 +73,10 @@
             <button
                 type="submit"
                 class="flex justify-center w-full py-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-sm font-semibold leading-6 text-white shadow-sm"
-                [ngClass]="{'bg-gray-600': token.formSubmitted, 'hover:bg-gray-600': token.formSubmitted}"
-                [disabled]="token.formSubmitted"
+                [ngClass]="{'bg-gray-600': auth.preventLoginFormSubmission, 'hover:bg-gray-600': auth.preventLoginFormSubmission}"
+                [disabled]="auth.preventLoginFormSubmission"
             >
-              @if (token.formSubmitted) {
+              @if (auth.preventLoginFormSubmission) {
                 <fa-icon [icon]="faSpinner" class="animate-spin text-white" size="lg" />
               } @else {
                 Zaloguj się

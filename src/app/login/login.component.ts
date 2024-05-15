@@ -2,10 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faCloudArrowUp, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { NgForm, FormsModule, NgModel } from '@angular/forms';
-import { TokenService } from '../token.service';
+import { AuthService } from '../auth.service';
 import {CommonModule} from "@angular/common";
 import {Router} from "@angular/router";
-import {Observable} from "rxjs";
 
 @Component({
   selector: 'app-login',
@@ -17,18 +16,18 @@ import {Observable} from "rxjs";
 export class LoginComponent implements OnInit {
   faCloud = faCloudArrowUp;
   faSpinner = faSpinner;
-  passwordField = '';
-  emailNotValid = false;
-  passwordNotValid = false;
+  passwordField: string = 'password'; //TODO usunąć domyślne hasło
+  emailNotValid: boolean = false;
+  passwordNotValid: boolean = false;
 
-  constructor(public token: TokenService, public router: Router) { }
+  constructor(public auth: AuthService, public router: Router) { }
 
   ngOnInit() {
-    if (this.token.isAuthenticated)
+    if (this.auth.isAuthenticated)
       this.router.navigateByUrl('/');
   }
 
-  submit(form: NgForm, emailInput: NgModel, passwordInput: NgModel) {
+  submit(form: NgForm, emailInput: NgModel, passwordInput: NgModel): void {
 
     if (form.invalid) {
       if (emailInput.invalid)
@@ -39,19 +38,19 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    if (this.token.formSubmitted) return;
+    if (this.auth.preventLoginFormSubmission) return;
 
     const emailAddress = form.value.email;
     const password = form.value.password;
 
-    this.token.formSubmitted = true;
+    this.auth.preventLoginFormSubmission = true;
     this.emailNotValid = false;
     this.passwordNotValid = false;
-    this.token.generateToken(emailAddress, password)
+    this.auth.login(emailAddress, password)
 
     const myInterval = setInterval(() => {
-      if (!this.token.formSubmitted) {
-        if (this.token.error !== 200)
+      if (!this.auth.preventLoginFormSubmission) {
+        if (this.auth.loginRequestStatus !== 200)
           this.passwordField = ''
         clearInterval(myInterval);
       }
@@ -60,7 +59,7 @@ export class LoginComponent implements OnInit {
   }
 
   removeErrorMessage(email: boolean = false) {
-    this.token.error = 200;
+    this.auth.loginRequestStatus = 200;
 
     if (email)
       this.emailNotValid = false;

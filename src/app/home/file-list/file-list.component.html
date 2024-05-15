@@ -1,0 +1,81 @@
+<h2 class="text-2xl mb-3 select-none">
+    @for(part of files.path.replace('root', 'Twój dysk').split('/'); track $index) {
+        @if ($last) {
+            <span
+                class="font-bold text-slate-900"
+                [title]="'Jesteś w folderze ' + part"
+            >{{part}}</span>
+        } @else {
+            <span
+                class="cursor-pointer px-2 py-2 rounded text-slate-700 hover:text-slate-800 hover:bg-zinc-200"
+                [title]="'Przejdź do folderu ' + part"
+                (click)="files.changeLocation(files.path.split('/').slice(0, $index - files.path.split('/').length + 1).join('/'))"
+            >{{part}}</span>
+            <span class="px-2 relative top-0.5 text-slate-600">
+                <fa-icon size="xs" [icon]="faAngleRight" />
+            </span>
+        }
+    }
+</h2>
+
+@if (files.pathFileTree.length) {
+    <section
+        class="bg-white px-10 py-6 rounded-lg grid grid-cols-[2rem_minmax(16.666%,_min-content)_10%_auto] gap-4"
+    >
+            <div></div>
+            <div class="min-w-52 font-semibold hover:underline underline-offset-2 cursor-pointer">
+                Nazwa
+            </div>
+            <div
+                class="font-semibold hover:underline underline-offset-2 cursor-pointer">
+                Data
+            </div>
+            <div
+                class="font-semibold hover:underline underline-offset-2 cursor-pointer">
+                Rozmiar pliku
+            </div>
+
+        @for (file of files.pathFileTree; track $index) {
+
+            @if (file.type == 'file' && !files.isLoading) {
+
+                <div class="pl-0.5">
+                    <fa-icon
+                        [icon]="files.getIcon(file.name.split('.')[file.name.split('.').length - 1].toLowerCase())"
+                        size="lg"
+                        class="text-slate-600"
+                    />
+                </div>
+                <div class="pl-0.5">{{file.name}}</div>
+                <div class="pl-0.5">{{file.date | date:'shortDate'}}</div>
+                <div class="pl-0.5">{{file.size! | memoryUnit}}</div>
+            } @else if (!files.isLoading) {
+
+                <div class="pl-0.5">
+                    <fa-icon [icon]="faFolder" size="lg" class="text-amber-300" />
+                </div>
+                <div
+                    class="pl-0.5 cursor-pointer hover:underline underline-offset-2 select-none h-6"
+                    (click)="files.changeLocation(files.path + '/' + file.name)"
+                >
+                    {{file.name}}
+                </div>
+                <div class="pl-0.5">
+                    {{getLatestChangeDate(file) | date:'shortDate'}}</div>
+                <div></div>
+
+            }
+
+            @if (!$last) {
+                <hr class="col-span-full" />
+            }
+
+        }
+
+    </section>
+} @else if (!files.isLoading) {
+    <div class="h-[70vh] flex flex-col justify-center items-center gap-8 text-slate-800 text-2xl font-medium">
+        <fa-icon [icon]="faFolderOpen" class="text-sky-300 -rotate-12" size="6x"/>
+        Ten folder jest pusty
+    </div>
+}

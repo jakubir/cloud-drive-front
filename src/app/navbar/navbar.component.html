@@ -1,3 +1,30 @@
-<nav class="px-16 py-4 bg-emerald-700 text-white">
-    <h1 class="font-normal text-3xl">J'Drive</h1>
+<nav class="px-28 py-4 bg-emerald-700 text-white flex justify-between">
+    <h1 
+        class="font-semibold text-3xl font-serif tracking-wide select-none cursor-pointer" 
+        (click)="files.changeLocation('root')"
+    >
+        J'Drive
+    </h1>
+    @if (auth.isAuthenticated) {
+        <div class="relative">
+            <button (click)="toggleMenu()">
+                <fa-icon [icon]="faUser" size="2x"/>
+            </button>
+            <div 
+                class="absolute right-0 z-1 mt-2 w-40 rounded-md bg-white hover:bg-zinc-100 shadow-lg ring-1 ring-slate-100 font-semibold group"
+                [ngClass]="{'hidden': isMenuHidden}"
+            >
+                <div class="py-1">
+                    <form #form="ngForm" (ngSubmit)="signOut()">
+                        <button 
+                            type="submit" 
+                            class="text-gray-700 block w-full px-4 py-2 text-left text-sm group-hover:underline underline-offset-2" 
+                        >
+                            Sign out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
 </nav>
