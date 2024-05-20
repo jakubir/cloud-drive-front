@@ -1,11 +1,95 @@
 <aside>
     <app-upload-button />
     <h2 class="text-xl text-semibold mb-3">{{files.owner}}</h2>
-    <ul>
-        <app-file-tree-branch 
-            [directoryOpen]="true" 
-            [fileTreeBranch]="files.fileTree" 
-            class="text-normal" 
-        />
-    </ul>
+    <div
+        class="cursor-pointer select-none p-2 transition-colors hover:bg-zinc-200 rounded-lg flex items-center"
+        [ngClass]="{'bg-blue-100 hover:bg-blue-200': this.files.path == files.fileTree.name}"
+    >
+        <span
+            class="group flex items-center" [title]="' folder ' + files.fileTree.name"
+            (click)="toggleOpen(files.fileTree.name)"
+        >
+            <fa-icon
+                [icon]="angleIcon.get(openDirectories[files.fileTree.name]) || angleIcon.get(false)!"
+                size="sm"
+                class="text-gray-800 pr-1.5"
+            />
+            <fa-icon
+                [icon]="folderIcon.get(openDirectories[files.fileTree.name]) || folderIcon.get(false)!"
+                size="xl"
+                class="text-amber-300 group-hover:text-amber-400 transition-colors"
+            />
+        </span>
+        <span
+            class="hover:underline underline-offset-2 pl-1.5 truncate grow"
+            [title]="'Przejdź do folderu ' + files.fileTree.name"
+            (click)="files.changeLocation(files.fileTree.name); !openDirectories[files.fileTree.name] && toggleOpen(files.fileTree.name)"
+        >
+            {{files.fileTree.name == 'root' ? 'Twój dysk' : files.fileTree.name}}
+        </span>
+    </div>
+    @if (openDirectories[files.fileTree.name]) {
+        <ul class="overflow-y-auto overflow-x-hidden max-h-[calc(100vh_-_5.5rem_-_3.25rem_-_3.75rem_-_2.5rem)]">
+            <ng-container *ngTemplateOutlet="fileTree; context: { fileList: files.fileTree.children, path: 'root' }" />
+        </ul>
+    }
 </aside>
+
+<ng-template #fileTree let-branch="fileList" let-path="path">
+    @for (file of branch; track $index) {
+        @if (file.type == 'directory') {
+            <li class="ml-3 my-1">
+                <div
+                    class="cursor-pointer select-none p-2 transition-colors hover:bg-zinc-200 rounded-lg flex items-center"
+                    [ngClass]="{'bg-blue-100 hover:bg-blue-200': this.files.path == path + '/' + file.name}"
+                >
+                    <span
+                        class="group flex items-center" [title]="' folder ' + file.name"
+                        (click)="toggleOpen(path + '/' + file.name)"
+                    >
+                        <fa-icon
+                            [icon]="angleIcon.get(openDirectories[path + '/' + file.name]) || angleIcon.get(false)!"
+                            size="sm"
+                            class="text-gray-800 pr-1.5"
+                        />
+                        <fa-icon
+                            [icon]="folderIcon.get(openDirectories[path + '/' + file.name]) || folderIcon.get(false)!"
+                            size="xl"
+                            class="text-amber-300 group-hover:text-amber-400 transition-colors"
+                        />
+                    </span>
+                    <span
+                        class="hover:underline underline-offset-2 pl-1.5 truncate grow"
+                        [title]="'Przejdź do folderu ' + file.name"
+                        (click)="files.changeLocation(path + '/' + file.name); !openDirectories[path + '/' + file.name] && toggleOpen(path + '/' + file.name)"
+                    >
+                        {{file.name == 'root' ? 'Twój dysk' : file.name}}
+                    </span>
+                </div>
+                @if (openDirectories[path + '/' + file.name]) {
+                    <ul>
+                        <ng-container *ngTemplateOutlet="fileTree; context: { fileList: file.children, path: path + '/' + file.name }" />
+                    </ul>
+                }
+            </li>
+        } @else if (
+            numberOfDirectoryChildren(branch) + maxNumberOfFileChildren > $index || 
+            numberOfFilesChildren(branch) - maxNumberOfFileChildren == 1
+        ) {
+            <li class="ml-5 mt-1 py-1 flex" [title]="file.name">
+                <fa-icon
+                    [icon]="files.getIcon(getFileExtension(file.name))"
+                    size="xl"
+                    class="text-slate-600"
+                />
+                <span class="pl-1.5 truncate">{{getFileName(file.name)}}</span>
+                <span class="grow">.{{getFileExtension(file.name)}}</span>
+            </li>
+        } @else if (numberOfDirectoryChildren(branch) + maxNumberOfFileChildren == $index) {
+            <li class="ml-6 py-1 font-semibold text-slate-700" [title]="'Tyle jeszcze plików w folderze ' + branch.name">
+                + {{ numberOfFilesChildren(branch) - maxNumberOfFileChildren }}
+                {{ numberOfFilesChildren(branch) - maxNumberOfFileChildren > 4 ? 'plików' : 'pliki' }}
+            </li>
+        }
+    }
+</ng-template>

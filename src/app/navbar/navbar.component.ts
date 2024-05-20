@@ -44,6 +44,6 @@ export class NavbarComponent {
     this.auth.signOut(); 
     this.isMenuHidden = true;
     this.files.reset()
-    this.files.cos = false;
+    this.files.afterLoginFileList = false;
   }
 }

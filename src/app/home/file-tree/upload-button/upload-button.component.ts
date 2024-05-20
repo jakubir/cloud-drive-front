@@ -1,6 +1,6 @@
 import { Component, HostListener } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faPlus, faFolderPlus, faFileArrowUp } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faFolderPlus, faFileArrowUp, IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { FilesService } from '../../../files.service';
 
 
@@ -12,10 +12,10 @@ import { FilesService } from '../../../files.service';
   styleUrl: './upload-button.component.css'
 })
 export class UploadButtonComponent {
-  faPlus = faPlus;
-  faFile = faFileArrowUp;
-  faFolder = faFolderPlus;
-  isOptionsHidden = true;
+  faPlus: IconDefinition = faPlus;
+  faFile: IconDefinition = faFileArrowUp;
+  faFolder: IconDefinition = faFolderPlus;
+  isOptionsHidden: boolean = true;
 
   constructor(private files: FilesService) { }
 

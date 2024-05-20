@@ -5,6 +5,34 @@
 @tailwind utilities;
 
 html, body {
-    @apply h-full;
+    @apply h-screen;
     @apply bg-zinc-50;
+    @apply overflow-hidden;
+}
+
+
+::-webkit-scrollbar {
+    @apply w-[22px];
+}
+ 
+::-webkit-scrollbar-track {
+    @apply bg-none
+}
+ 
+::-webkit-scrollbar-thumb {
+    @apply bg-zinc-400;
+    @apply border-8;
+    @apply border-solid;
+    @apply border-transparent;
+    @apply rounded-full;
+    @apply bg-clip-padding;
+    @apply transition-all
+}
+ 
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-500;
+    @apply border-8;
+    @apply border-solid;
+    @apply border-transparent;
+    @apply bg-clip-padding;
 }

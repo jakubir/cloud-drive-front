@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { faFile, faFolder, IconDefinition, faAngleRight, faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
+import { faFile, faFolder, IconDefinition, faCaretDown, faCaretUp } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen } from '@fortawesome/free-regular-svg-icons'
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -7,6 +7,7 @@ import { FilesService } from '../../files.service';
 import { File } from '../../types/file.type';
 import { MemoryUnitPipe } from '../../memory-unit.pipe';
 import { Router } from '@angular/router';
+import { DirectoryBreadcrumbComponent } from './directory-breadcrumb/directory-breadcrumb.component';
 
 interface sort {
   sortBy: "name" | "date" | "size",
@@ -16,16 +17,15 @@ interface sort {
 @Component({
   selector: 'app-file-list',
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, MemoryUnitPipe],
+  imports: [CommonModule, FontAwesomeModule, MemoryUnitPipe, DirectoryBreadcrumbComponent],
   templateUrl: './file-list.component.html',
   styleUrl: './file-list.component.css'
 })
 export class FileListComponent {
   faFile: IconDefinition = faFile;
   faFolder: IconDefinition = faFolder;
-  faAngleRight: IconDefinition = faAngleRight;
-  faFolderOpen = faFolderOpen;
-  faArrow = faCaretDown;
+  faFolderOpen: IconDefinition = faFolderOpen;
+  faArrow: IconDefinition = faCaretDown;
   currentSort: sort = {
     sortBy: "name",
     order: "ASC"

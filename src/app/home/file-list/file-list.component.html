@@ -1,27 +1,6 @@
-<h2 class="text-2xl mb-3 select-none">
-    @for(part of files.path.replace('root', 'Twój dysk').split('/'); track $index) {
-        @if ($last) {
-            <span
-                class="font-bold text-slate-900"
-                [title]="'Jesteś w folderze ' + part"
-            >{{part}}</span>
-        } @else {
-            <span
-                class="cursor-pointer px-2 py-2 rounded text-slate-700 hover:text-slate-800 hover:bg-zinc-200"
-                [title]="'Przejdź do folderu ' + part"
-                (click)="files.changeLocation(files.path.split('/').slice(0, $index - files.path.split('/').length + 1).join('/'))"
-            >{{part}}</span>
-            <span class="px-2 relative top-0.5 text-slate-600">
-                <fa-icon size="xs" [icon]="faAngleRight" />
-            </span>
-        }
-    }
-</h2>
-
+<app-directory-breadcrumb />
 @if (files.pathFileTree.length) {
-    <section
-        class="bg-white px-10 py-6 rounded-lg grid grid-cols-[2rem_minmax(16.666%,_min-content)_10%_auto] gap-4"
-    >
+    <section class="bg-white px-10 max-h-[calc(100vh_-_3rem_-_4rem_-_4.25rem)] overflow-auto py-6 rounded-lg grid grid-cols-[2rem_minmax(16.666%,_max-content)_10%_auto] gap-4">
             <div></div>
             <div
                 class="min-w-52 font-semibold group underline-offset-2 cursor-pointer"
@@ -114,5 +93,6 @@
     <div class="h-[70vh] flex flex-col justify-center items-center gap-8 text-slate-800 text-2xl font-medium">
         <fa-icon [icon]="faFolderOpen" class="text-sky-300 -rotate-12" size="6x"/>
         Ten folder jest pusty
+        <!-- TODO przycisk przesyłania plików -->
     </div>
 }

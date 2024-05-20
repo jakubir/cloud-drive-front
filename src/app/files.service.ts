@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, signal} from '@angular/core';
 import {AuthService} from './auth.service';
 import {Router} from '@angular/router';
 import {
@@ -14,7 +14,7 @@ import {
 import {Buffer} from 'buffer';
 import {File} from './types/file.type'
 import {IconDefinition} from '@fortawesome/fontawesome-svg-core';
-import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import { Title } from '@angular/platform-browser';
 
 @Injectable({
@@ -24,21 +24,28 @@ export class FilesService {
   private url: string = 'http://localhost:8080/files';
   public path: string = 'root';
   public owner: string = '';
-  public isLoading: boolean = true;
   public fileTree: File = {
     name: 'root',
     type: 'directory',
     children: []
   };
   public pathFileTree: File[] = [];
-  public cos = false;
+
+  public afterLoginFileList: boolean = false;
+  public isLoading: boolean = true;
+  public isSendingFiles: boolean = false;
+  public sendingFilesSuccessful: boolean = false;
+  public sendingFilesAborted: boolean = false;
+  public sendingFilesError: string = '';
 
   constructor (private auth: AuthService, private router: Router, private http: HttpClient, private title: Title) {
+    const buf = Buffer.from(this.router.url.substring(1).replaceAll('_', '/').replaceAll('-', '+'), 'base64');
 
     if (this.auth.getPayload() == null) return;
 
     this.getFileList();
     this.owner = this.auth.getPayload()!.sub;
+    this.path = buf.toString('utf8');
   }
 
   reset() {
@@ -49,8 +56,8 @@ export class FilesService {
       name: 'root',
       type: 'directory',
       children: []
-    }
-    this.pathFileTree = []
+    };
+    this.pathFileTree = [];
   }
 
   fileTreeFromPath(): File[] {
@@ -69,6 +76,7 @@ export class FilesService {
 
       if (foundDirectory == undefined) {
         this.router.navigateByUrl('/cm9vdA');
+        this.path = 'root';
 
         return this.fileTree.children;
       } else {
@@ -100,12 +108,19 @@ export class FilesService {
 
   changeLocation(path: string) {
     const buf = Buffer.from(path, 'utf8');
-    const locationId = buf.toString('base64').replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+    const locationId = buf
+      .toString('base64')
+      .replaceAll('=', '')
+      .replaceAll('+', '-')
+      .replaceAll('/', '_');
+    const pathParts = this.path
+      .replace('root', 'Twój dysk')
+      .split('/');
 
     this.router.navigateByUrl(`/${locationId}`);
     this.path = path;
     this.pathFileTree = this.sortFileList(this.fileTreeFromPath());
-    this.title.setTitle(`${this.path.replace('root', 'Twój dysk').split('/')[this.path.replace('root', 'Twój dysk').split('/').length - 1]} - J\'Drive`);
+    this.title.setTitle(`${pathParts[pathParts.length - 1]} - J\'Drive`);
   }
 
   sortFileList(fileList: File[], recursive = false, sortBy: 'name' | 'date' | 'size' = 'name', order: 'ASC' | 'DESC' = 'ASC') {
@@ -125,8 +140,8 @@ export class FilesService {
     }
 
     if (order == 'DESC') {
-      directories.reverse()
-      files.reverse()
+      directories.reverse();
+      files.reverse();
     }
 
     if (recursive)
@@ -138,9 +153,7 @@ export class FilesService {
   }
 
   getFileList() {
-    this.auth.renewToken();
-    this.cos = true;
-
+    this.afterLoginFileList = true;
     this.isLoading = true;
 
     this.http.get(`${this.url}/list`, {
@@ -148,21 +161,70 @@ export class FilesService {
         .set('Authorization', 'Bearer ' + this.auth.getToken())
         .set('Accept', 'application/json')
     }).subscribe({
-      next: (data: any) => {
+      next: (res: any) => {
         const buf = Buffer.from(this.router.url.substring(1).replaceAll('_', '/').replaceAll('-', '+'), 'base64');
 
-        this.fileTree = data;
+        this.fileTree = res;
         this.fileTree.children = this.sortFileList(this.fileTree.children, true);
-
         this.path = buf.toString('utf8');
         this.pathFileTree = this.fileTreeFromPath();
-        this.isLoading = false;
         this.title.setTitle(`${this.path.replace('root', 'Twój dysk').split('/')[this.path.replace('root', 'Twój dysk').split('/').length - 1]} - J\'Drive`);
+        this.isLoading = false;
       },
       error: (err) => {
         console.error(err);
         this.isLoading = false;
       }
     });
+  }
+
+  uploadFile(files: FileList) {
+    this.auth.renewToken();
+
+    let formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append('files', files[i]);
+    }
+    formData.append('path', this.path.replace('root/', '').replace('root', ''));
+
+    console.log(formData.getAll('files'), formData.get('path'));    
+
+    this.isSendingFiles = true;
+
+    this.http.post(`${this.url}`, formData, {
+      headers: new HttpHeaders()
+        .set('Authorization', 'Bearer ' + this.auth.getToken())
+        .set('Accept', 'application/json')
+    }).subscribe({
+      next: () => {
+        this.isSendingFiles = false;
+        this.sendingFilesSuccessful = true;
+        this.getFileList();
+        setTimeout(() => {
+          this.sendingFilesSuccessful = false;
+        }, 4500);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isSendingFiles = false;
+        this.sendingFilesAborted = true;
+        switch (err.status) {
+          case 400:
+            this.sendingFilesError = 'Nie można przesyłać pustych plików';
+            break;
+          case 413:
+            if (files.length > 1)
+              this.sendingFilesError = 'Conajmniej jeden z plików jest za duży';
+            else 
+              this.sendingFilesError = 'Wybrany plik jest za duży';
+            break;
+          default:
+            this.sendingFilesError = 'Przesyłanie plików nie powiodło się';
+            break;
+        }
+        setTimeout(() => {
+          this.sendingFilesAborted = false;
+        }, 4500);
+      }
+    })
   }
 }
