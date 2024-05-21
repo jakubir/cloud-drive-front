@@ -13,7 +13,7 @@
         class="flex justify-center gap-2.5 absolute left-0 right-0 ml-auto mr-auto p-4 rounded w-1/4 font-medium bg-green-200 transition-all duration-500"
     >
         <fa-icon [icon]="faCheck" class="text-green-500" size="lg" />
-        <span class="text-green-800">Przesłano plik</span>
+        <span class="text-green-800">{{files.sendingSuccessMessage}}</span>
     </div>
     <div
         [ngClass]="{'-bottom-16': !files.sendingFilesAborted, 'bottom-8': files.sendingFilesAborted}"

@@ -35,6 +35,7 @@ export class FilesService {
   public isLoading: boolean = true;
   public isSendingFiles: boolean = false;
   public sendingFilesSuccessful: boolean = false;
+  public sendingSuccessMessage: string = '';
   public sendingFilesAborted: boolean = false;
   public sendingFilesError: string = '';
 
@@ -156,7 +157,7 @@ export class FilesService {
     this.afterLoginFileList = true;
     this.isLoading = true;
 
-    this.http.get(`${this.url}/list`, {
+    this.http.get(`${this.url}`, {
       headers: new HttpHeaders()
         .set('Authorization', 'Bearer ' + this.auth.getToken())
         .set('Accept', 'application/json')
@@ -187,8 +188,6 @@ export class FilesService {
     }
     formData.append('path', this.path.replace('root/', '').replace('root', ''));
 
-    console.log(formData.getAll('files'), formData.get('path'));    
-
     this.isSendingFiles = true;
 
     this.http.post(`${this.url}`, formData, {
@@ -199,6 +198,7 @@ export class FilesService {
       next: () => {
         this.isSendingFiles = false;
         this.sendingFilesSuccessful = true;
+        this.sendingSuccessMessage = "Przesłano plik";
         this.getFileList();
         setTimeout(() => {
           this.sendingFilesSuccessful = false;
@@ -219,6 +219,92 @@ export class FilesService {
             break;
           default:
             this.sendingFilesError = 'Przesyłanie plików nie powiodło się';
+            break;
+        }
+        setTimeout(() => {
+          this.sendingFilesAborted = false;
+        }, 4500);
+      }
+    })
+  }
+
+  isFolderNameTaken(fileName: string): boolean {    
+    if (this.fileTreeFromPath().filter((file) => file.name == fileName.trim()).length)
+      return false;
+
+    return true;
+  }
+
+  createNewFolder(folderName: string) {
+    this.auth.renewToken();
+
+    let formData = new FormData();
+    const path = this.path.replace('root/', '').replace('root', '');
+
+    formData.append('path', path + (path.length ? "/" : "") + folderName);
+
+    this.http.post(`${this.url}/new-folder`, formData, {
+      headers: new HttpHeaders()
+        .set('Authorization', 'Bearer ' + this.auth.getToken())
+        .set('Accept', 'application/json')
+    }).subscribe({
+      next: () => {
+        this.sendingFilesSuccessful = true;
+        this.sendingSuccessMessage = "Utworzono folder " + folderName;
+        this.getFileList();
+        setTimeout(() => {
+          this.sendingFilesSuccessful = false;
+        }, 4500);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isSendingFiles = false;
+        this.sendingFilesAborted = true;
+        switch (err.status) {
+          case 400:
+            this.sendingFilesError = 'Folder o podanej nazwie już istnieje';
+            break;
+          default:
+            this.sendingFilesError = 'Tworzenie folderu nie powiodło się';
+            break;
+        }
+        setTimeout(() => {
+          this.sendingFilesAborted = false;
+        }, 4500);
+      }
+    })
+  }
+
+  removeFile(name: string) {
+    this.auth.renewToken();
+
+    const path = this.path.replace('root/', '').replace('root', '');
+    let formData = new FormData();
+
+    formData.append('path', path + (path.length ? "/" : "") + name);
+
+    this.http.delete(`${this.url}`, {
+      headers: new HttpHeaders()
+        .set('Authorization', 'Bearer ' + this.auth.getToken())
+        .set('Accept', 'application/json'),
+      body: formData
+    }).subscribe({
+      next: () => {
+        this.sendingFilesSuccessful = true;
+        this.sendingSuccessMessage = "Usunięto " + name;
+        this.getFileList();
+        setTimeout(() => {
+          this.sendingFilesSuccessful = false;
+        }, 4500);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isSendingFiles = false;
+        this.sendingFilesAborted = true;
+        switch (err.status) {
+          case 400:
+            this.sendingFilesError = 'Plik już nie istnieje';
+            break;
+          default:
+            this.sendingFilesError = 'Usuwanie nie powiodło się';
             break;
         }
         setTimeout(() => {

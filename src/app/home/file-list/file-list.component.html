@@ -1,9 +1,12 @@
 <app-directory-breadcrumb />
 @if (files.pathFileTree.length) {
-    <section class="bg-white px-10 max-h-[calc(100vh_-_3rem_-_4rem_-_4.25rem)] overflow-auto py-6 rounded-lg grid grid-cols-[2rem_minmax(16.666%,_max-content)_10%_auto] gap-4">
-            <div></div>
+    <section 
+        class="bg-white px-5 py-2 max-h-[calc(100vh_-_3rem_-_4rem_-_4.25rem)] overflow-auto rounded-lg grid grid-cols-[3.25rem_minmax(16.666%,_max-content)_1fr_auto] sm:grid-cols-[3.25rem_minmax(16.666%,_max-content)_10%_auto]"
+        (scroll)="hideMenu()"
+    >
+            <div class="py-4 pr-4 pl-5"></div>
             <div
-                class="min-w-52 font-semibold group underline-offset-2 cursor-pointer"
+                class="min-w-52 font-semibold group underline-offset-2 cursor-pointer py-4 pr-4"
                 [title]="
                     currentSort.sortBy == 'name' ?
                     'Sortuj po nazwie (' + (currentSort.order == 'ASC' ? 'A-Z' : 'Z-A') + ')' :
@@ -18,7 +21,7 @@
                 </button>
             </div>
             <div
-                class="font-semibold group underline-offset-2 cursor-pointer"
+                class="font-semibold group underline-offset-2 cursor-pointer py-4 pr-4"
                 [title]="
                     currentSort.sortBy == 'date' ?
                     'Sortuj po dacie ' + (currentSort.order == 'ASC' ? 'od najstarszej do najnowszej' : 'od najnowszej do najstarszej') :
@@ -33,7 +36,7 @@
                 </button>
             </div>
             <div
-                class="font-semibold group underline-offset-2 cursor-pointer"
+                class="font-semibold group underline-offset-2 cursor-pointer py-4 pr-5"
                 [title]="
                     currentSort.sortBy == 'size' ?
                     'Sortuj po rozmiarze ' + (currentSort.order == 'ASC' ? 'od najmniejszego do największego' : 'od największego do najmniejszego') :
@@ -52,38 +55,46 @@
 
             @if (file.type == 'file' && !files.isLoading) {
 
-                <div class="pl-0.5">
+                <div class="pl-5.5 pr-4 py-4 rounded-l-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                     <fa-icon
                         [icon]="files.getIcon(file.name.split('.')[file.name.split('.').length - 1].toLowerCase())"
                         size="lg"
                         class="text-slate-600"
                     />
                 </div>
-                <div class="pl-0.5">{{file.name}}</div>
-                <div class="pl-0.5">{{file.date | date:'shortDate'}}</div>
-                <div class="pl-0.5">{{file.size! | memoryUnit}}</div>
+                <div class="pl-0.5 pr-4 py-4 element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                    {{file.name}}
+                </div>
+                <div class="pl-0.5 pr-4 py-4 element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                    {{file.date | date:'shortDate'}}
+                </div>
+                <div class="pl-0.5 py-4 pr-5 rounded-r-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">  
+                    {{file.size! | memoryUnit}}
+                </div>
+
             } @else if (!files.isLoading) {
 
-                <div class="pl-0.5">
+                <div class="pl-5.5 py-4 pr-4 rounded-l-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                     <fa-icon [icon]="faFolder" size="lg" class="text-amber-300" />
                 </div>
                 <div
-                    class="pl-0.5 cursor-pointer hover:underline underline-offset-2 select-none h-6"
-                    (click)="files.changeLocation(files.path + '/' + file.name)"
+                    class="pl-0.5 select-none py-4 pr-4 element transition-colors"
+                    (contextmenu)="openMenu($event)"
+                    [attr.data-id]="$index"
                 >
-                    {{file.name}}
+                    <span class="cursor-pointer hover:underline underline-offset-2" (click)="files.changeLocation(files.path + '/' + file.name)">{{file.name}}</span>
                 </div>
-                <div class="pl-0.5">
+                <div class="pl-0.5 py-4 pr-4 element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                     {{getLatestChangeDate(file) | date:'shortDate'}}
                 </div>
-                <div class="pl-0.5">
+                <div class="pl-0.5 py-4 pr-5 rounded-r-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                   {{file.size! | memoryUnit}}
                 </div>
 
             }
 
             @if (!$last) {
-                <hr class="col-span-full" />
+                <hr class="col-span-full mx-2" />
             }
 
         }
@@ -93,6 +104,28 @@
     <div class="h-[70vh] flex flex-col justify-center items-center gap-8 text-slate-800 text-2xl font-medium">
         <fa-icon [icon]="faFolderOpen" class="text-sky-300 -rotate-12" size="6x"/>
         Ten folder jest pusty
-        <!-- TODO przycisk przesyłania plików -->
     </div>
 }
+
+
+
+<div 
+    class="absolute right-0 z-1 font-medium min-w-52"
+    [ngClass]="{'invisible': isMenuHidden}" 
+    #contextMenu
+>
+    <div class="mt-2 w-full origin-top-right rounded-md bg-white shadow-lg ring-1 ring-slate-200">
+        <div class="w-full flex flex-col">
+            <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="removeFile()">
+                <fa-icon [icon]="faTrashCan" size="lg" class="text-slate-700" />
+                <span class="pl-2 group-hover:underline underline-offset-2">Usuń</span>
+            </button> 
+            @if (this.selectedId != undefined && this.files.fileTreeFromPath()[this.selectedId].type == 'file') {
+                <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="downloadFile()">
+                    <fa-icon [icon]="faDownload" size="lg" class="text-slate-700" />
+                    <span class="pl-2 group-hover:underline underline-offset-2">Pobierz</span>
+                </button> 
+            }
+        </div>
+    </div>
+</div>

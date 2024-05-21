@@ -1,5 +1,5 @@
 <aside>
-    <app-upload-button />
+    <app-upload-button (newFolderEvent)="openNewFolderDialog()"/>
     <h2 class="text-xl text-semibold mb-3">{{files.owner}}</h2>
     <div
         class="cursor-pointer select-none p-2 transition-colors hover:bg-zinc-200 rounded-lg flex items-center"
@@ -8,6 +8,7 @@
         <span
             class="group flex items-center" [title]="' folder ' + files.fileTree.name"
             (click)="toggleOpen(files.fileTree.name)"
+            [title]="(openDirectories[files.fileTree.name] ? 'Zwiń' : 'Rozwiń') + ' folder ' + files.fileTree.name"
         >
             <fa-icon
                 [icon]="angleIcon.get(openDirectories[files.fileTree.name]) || angleIcon.get(false)!"
@@ -34,18 +35,23 @@
         </ul>
     }
 </aside>
+<app-new-folder-dialog (dialogRef)="getDialogRef($event)"/>
 
 <ng-template #fileTree let-branch="fileList" let-path="path">
     @for (file of branch; track $index) {
         @if (file.type == 'directory') {
             <li class="ml-3 my-1">
                 <div
-                    class="cursor-pointer select-none p-2 transition-colors hover:bg-zinc-200 rounded-lg flex items-center"
-                    [ngClass]="{'bg-blue-100 hover:bg-blue-200': this.files.path == path + '/' + file.name}"
+                    [ngClass]="{
+                        'bg-blue-100 hover:bg-blue-200': this.files.path == path + '/' + file.name,
+                        'hover:bg-zinc-200': this.files.path != path + '/' + file.name
+                    }"
+                    class="cursor-pointer select-none p-2 transition-colors rounded-lg flex items-center"
                 >
                     <span
                         class="group flex items-center" [title]="' folder ' + file.name"
                         (click)="toggleOpen(path + '/' + file.name)"
+                        [title]="(openDirectories[path + '/' + file.name] ? 'Zwiń' : 'Rozwiń') + ' folder ' + file.name"
                     >
                         <fa-icon
                             [icon]="angleIcon.get(openDirectories[path + '/' + file.name]) || angleIcon.get(false)!"

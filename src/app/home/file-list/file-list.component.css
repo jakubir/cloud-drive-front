@@ -1,0 +1,49 @@
+.element:nth-child(5n):hover + .element + .element + .element,
+.element:nth-child(5n):hover + .element + .element,
+.element:nth-child(5n):hover + .element,
+.element:nth-child(5n):hover,
+
+.element:nth-child(5n+1):hover + .element + .element,
+.element:nth-child(5n+1):hover + .element,
+.element:nth-child(5n+1):hover,
+.element:has(+ .element:nth-child(5n+1):hover),
+
+.element:nth-child(5n+2):hover + .element,
+.element:nth-child(5n+2):hover,
+.element:has(+ .element:nth-child(5n+2):hover),
+.element:has(+ .element + .element:nth-child(5n+2):hover),
+
+.element:nth-child(5n+3):hover,
+.element:has(+ .element:nth-child(5n+3):hover),
+.element:has(+ .element + .element:nth-child(5n+3):hover),
+.element:has(+ .element + .element + .element:nth-child(5n+3):hover)
+{
+   @apply bg-zinc-200;
+}
+
+.focused {
+    @apply bg-blue-100;
+}
+
+.focused:nth-child(5n):hover + .focused + .focused + .focused,
+.focused:nth-child(5n):hover + .focused + .focused,
+.focused:nth-child(5n):hover + .focused,
+.focused:nth-child(5n):hover,
+
+.focused:nth-child(5n+1):hover + .focused + .focused,
+.focused:nth-child(5n+1):hover + .focused,
+.focused:nth-child(5n+1):hover,
+.focused:has(+ .focused:nth-child(5n+1):hover),
+
+.focused:nth-child(5n+2):hover + .focused,
+.focused:nth-child(5n+2):hover,
+.focused:has(+ .focused:nth-child(5n+2):hover),
+.focused:has(+ .focused + .focused:nth-child(5n+2):hover),
+
+.focused:nth-child(5n+3):hover,
+.focused:has(+ .focused:nth-child(5n+3):hover),
+.focused:has(+ .focused + .focused:nth-child(5n+3):hover),
+.focused:has(+ .focused + .focused + .focused:nth-child(5n+3):hover)
+{
+   @apply bg-blue-200 !important;
+}

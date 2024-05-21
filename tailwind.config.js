@@ -7,6 +7,11 @@ module.exports = {
     fontFamily: {
       sans: ['Montserrat', 'sans-serif'],
       serif: ['Cormorant Garamond']
+    },
+    extend: {
+      padding: {
+        '5.5': '1.375rem',
+      }
     }
   },
   plugins: [

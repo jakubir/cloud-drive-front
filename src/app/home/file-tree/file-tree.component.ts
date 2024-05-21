@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit } from '@angular/core';
 import { FilesService } from '../../files.service';
 import { UploadButtonComponent } from './upload-button/upload-button.component';
 import { CommonModule } from '@angular/common';
@@ -7,11 +7,12 @@ import { IconDefinition, faAngleDown, faAngleUp, faFile, faFolder, faFolderOpen 
 import { Router } from '@angular/router';
 import { Buffer } from 'buffer';
 import { File } from '../../types/file.type';
+import { NewFolderDialogComponent } from './new-folder-dialog/new-folder-dialog.component';
 
 @Component({
   selector: 'app-file-tree',
   standalone: true,
-  imports: [UploadButtonComponent, CommonModule, FontAwesomeModule],
+  imports: [UploadButtonComponent, CommonModule, FontAwesomeModule, NewFolderDialogComponent],
   templateUrl: './file-tree.component.html',
   styleUrl: './file-tree.component.css'
 })
@@ -28,6 +29,7 @@ export class FileTreeComponent implements OnInit {
     [path: string]: boolean
   } = {};
   maxNumberOfFileChildren: number = 2;
+  dialogRef: ElementRef<HTMLDialogElement> | null = null;
 
   constructor (public files: FilesService, public router: Router) { }
 
@@ -71,5 +73,13 @@ export class FileTreeComponent implements OnInit {
   
   numberOfFilesChildren(files: File[]): number {
     return files.length - this.numberOfDirectoryChildren(files);
+  }
+
+  openNewFolderDialog() {
+    this.dialogRef?.nativeElement.showModal();
+  }
+
+  getDialogRef(ref: ElementRef<HTMLDialogElement>) {
+    this.dialogRef = ref;
   }
 }

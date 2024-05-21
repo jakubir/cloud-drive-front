@@ -1,6 +1,6 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faPlus, faFolderPlus, faFileArrowUp, IconDefinition } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faFolderPlus, faFileArrowUp, IconDefinition, faFolder } from '@fortawesome/free-solid-svg-icons';
 import { FilesService } from '../../../files.service';
 
 
@@ -13,9 +13,12 @@ import { FilesService } from '../../../files.service';
 })
 export class UploadButtonComponent {
   faPlus: IconDefinition = faPlus;
-  faFile: IconDefinition = faFileArrowUp;
-  faFolder: IconDefinition = faFolderPlus;
+  faFileUpload: IconDefinition = faFileArrowUp;
+  faFolderUpload: IconDefinition = faFolderPlus;
+  faFolder: IconDefinition = faFolder;
   isOptionsHidden: boolean = true;
+
+  @Output() newFolderEvent = new EventEmitter();
 
   constructor(private files: FilesService) { }
 
@@ -37,10 +40,18 @@ export class UploadButtonComponent {
   fileInput(fileInput: EventTarget | null) {
     if (fileInput == null) return;
 
+    // sprawdzenie czy wybrany folder jest pusty
+
     const file = (fileInput as HTMLInputElement).files!;
     this.isOptionsHidden = true;
     
-    this.files.uploadFile(file)
+    this.files.uploadFile(file);
+  }
+
+  openNewFolderDialog() {
+    this.newFolderEvent.emit();
+
+    this.isOptionsHidden = true;
   }
 
   toggleOptions() {
