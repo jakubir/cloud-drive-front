@@ -153,6 +153,23 @@ export class FilesService {
     return fileList;
   }
 
+  isElementNameTaken(fileName: string): boolean {    
+    if (this.fileTreeFromPath().filter((file) => file.name == fileName.trim()).length)
+      return true;
+
+    return false;
+  }
+
+  isElementNameIncorrect(fileName: string): boolean {
+    if (fileName.trim().match(/[^<>:"/\\|?*]+/) == null) 
+      return true;
+    
+    if (fileName.trim().match(/[^<>:"/\\|?*]+/)![0].length == fileName.trim().length)
+      return false;
+
+    return true;
+  }
+
   getFileList() {
     this.afterLoginFileList = true;
     this.isLoading = true;
@@ -228,13 +245,6 @@ export class FilesService {
     })
   }
 
-  isFolderNameTaken(fileName: string): boolean {    
-    if (this.fileTreeFromPath().filter((file) => file.name == fileName.trim()).length)
-      return false;
-
-    return true;
-  }
-
   createNewFolder(folderName: string) {
     this.auth.renewToken();
 
@@ -274,13 +284,13 @@ export class FilesService {
     })
   }
 
-  removeFile(name: string) {
+  removeElement(name: string) {
     this.auth.renewToken();
 
     const path = this.path.replace('root/', '').replace('root', '');
     let formData = new FormData();
 
-    formData.append('path', path + (path.length ? "/" : "") + name);
+    formData.append('path', path + (path.length ? "/" : "") + name);    
 
     this.http.delete(`${this.url}`, {
       headers: new HttpHeaders()
@@ -307,6 +317,39 @@ export class FilesService {
             this.sendingFilesError = 'Usuwanie nie powiodło się';
             break;
         }
+        setTimeout(() => {
+          this.sendingFilesAborted = false;
+        }, 4500);
+      }
+    })
+  }
+
+  renameElement(name: string, newName: string) {
+    this.auth.renewToken();
+
+    const path = this.path.replace('root/', '').replace('root', '');
+    let formData = new FormData();
+
+    formData.append('path', path + (path.length ? "/" : "") + name);
+    formData.append('newName', newName);
+
+    this.http.patch(`${this.url}`, formData, {
+      headers: new HttpHeaders()
+        .set('Authorization', 'Bearer ' + this.auth.getToken())
+        .set('Accept', 'application/json')
+    }).subscribe({
+      next: () => {
+        this.sendingFilesSuccessful = true;
+        this.sendingSuccessMessage = "Zmieniono nazwę " + name + " na " + newName;
+        this.getFileList();
+        setTimeout(() => {
+          this.sendingFilesSuccessful = false;
+        }, 4500);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.isSendingFiles = false;
+        this.sendingFilesAborted = true;
+        this.sendingFilesError = 'Nie udało się zmienić nazwy';
         setTimeout(() => {
           this.sendingFilesAborted = false;
         }, 4500);

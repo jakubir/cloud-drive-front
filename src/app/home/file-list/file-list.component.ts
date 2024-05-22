@@ -1,5 +1,5 @@
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { faFile, faFolder, IconDefinition, faCaretDown, faCaretUp, faTrashCan, faDownload } from '@fortawesome/free-solid-svg-icons';
+import { faFile, faFolder, IconDefinition, faCaretDown, faCaretUp, faTrashCan, faDownload, faPenToSquare, faRightToBracket } from '@fortawesome/free-solid-svg-icons';
 import { faFolderOpen } from '@fortawesome/free-regular-svg-icons'
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -9,6 +9,8 @@ import { MemoryUnitPipe } from '../../memory-unit.pipe';
 import { Router } from '@angular/router';
 import { DirectoryBreadcrumbComponent } from './directory-breadcrumb/directory-breadcrumb.component';
 import { FormsModule } from '@angular/forms';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+import { RenameDialogComponent } from './rename-dialog/rename-dialog.component';
 
 interface sort {
   sortBy: "name" | "date" | "size",
@@ -18,7 +20,7 @@ interface sort {
 @Component({
   selector: 'app-file-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, FontAwesomeModule, MemoryUnitPipe, DirectoryBreadcrumbComponent],
+  imports: [CommonModule, FormsModule, FontAwesomeModule, MemoryUnitPipe, DirectoryBreadcrumbComponent, ConfirmDialogComponent, RenameDialogComponent],
   templateUrl: './file-list.component.html',
   styleUrl: './file-list.component.css'
 })
@@ -29,6 +31,8 @@ export class FileListComponent {
   faArrow: IconDefinition = faCaretDown;
   faTrashCan: IconDefinition = faTrashCan;
   faDownload: IconDefinition = faDownload;
+  faPen: IconDefinition = faPenToSquare;
+  faMove: IconDefinition = faRightToBracket;
 
   currentSort: sort = {
     sortBy: "name",
@@ -38,6 +42,9 @@ export class FileListComponent {
   isMenuHidden: boolean = true;
   selectedId!: number;
   @ViewChild('contextMenu') contextMenu!: ElementRef<HTMLDivElement>;
+
+  confirmDialogRef!: ElementRef<HTMLDialogElement>;
+  renameDialogRef!: ElementRef<HTMLDialogElement>;
 
   constructor (public files: FilesService, public router: Router) {
     router.events.subscribe(() => { // clearing filters when file-list content changes
@@ -61,6 +68,14 @@ export class FileListComponent {
       if (con) 
         this.hideMenu()
     }
+  }
+
+  getConfirmDialogRef(ref: ElementRef<HTMLDialogElement>) {
+    this.confirmDialogRef = ref
+  }
+
+  getRenameDialogRef(ref: ElementRef<HTMLDialogElement>) {
+    this.renameDialogRef = ref
   }
 
   getLatestChangeDate(file: File): string {
@@ -90,6 +105,17 @@ export class FileListComponent {
     this.files.pathFileTree = this.files.sortFileList(this.files.pathFileTree, false, this.currentSort.sortBy, this.currentSort.order);
   }
 
+  getSelectedFile(selectedId: number): File {
+    if (selectedId == undefined)
+      return {
+        name: '',
+        type: 'file',
+        children: []
+      };
+
+    return this.files.fileTreeFromPath()[selectedId];
+  }
+
   openMenu(event: MouseEvent) {
     event.preventDefault();
     
@@ -108,12 +134,23 @@ export class FileListComponent {
     document.querySelectorAll(`[data-id="${this.selectedId}"]`).forEach((e) => e.classList.remove('focused'));
   }
 
-  removeFile() {
-    this.files.removeFile(this.files.fileTreeFromPath()[this.selectedId].name);
-    
+  removeElement() {
     this.hideMenu()
+    this.confirmDialogRef.nativeElement.showModal();
   }
-  downloadFile() {
+
+  downloadElement() {
+    this.hideMenu()
+
+    throw new Error('Method not implemented.');
+  }
+
+  changeName() {
+    this.hideMenu()
+    this.renameDialogRef.nativeElement.showModal();
+  }
+
+  moveElement() {
     this.hideMenu()
 
     throw new Error('Method not implemented.');

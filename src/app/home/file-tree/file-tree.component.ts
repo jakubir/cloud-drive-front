@@ -12,7 +12,7 @@ import { NewFolderDialogComponent } from './new-folder-dialog/new-folder-dialog.
 @Component({
   selector: 'app-file-tree',
   standalone: true,
-  imports: [UploadButtonComponent, CommonModule, FontAwesomeModule, NewFolderDialogComponent],
+  imports: [CommonModule, FontAwesomeModule, NewFolderDialogComponent, UploadButtonComponent],
   templateUrl: './file-tree.component.html',
   styleUrl: './file-tree.component.css'
 })
@@ -29,7 +29,7 @@ export class FileTreeComponent implements OnInit {
     [path: string]: boolean
   } = {};
   maxNumberOfFileChildren: number = 2;
-  dialogRef: ElementRef<HTMLDialogElement> | null = null;
+  dialogRef!: ElementRef<HTMLDialogElement>;
 
   constructor (public files: FilesService, public router: Router) { }
 
@@ -76,7 +76,7 @@ export class FileTreeComponent implements OnInit {
   }
 
   openNewFolderDialog() {
-    this.dialogRef?.nativeElement.showModal();
+    this.dialogRef.nativeElement.showModal();
   }
 
   getDialogRef(ref: ElementRef<HTMLDialogElement>) {

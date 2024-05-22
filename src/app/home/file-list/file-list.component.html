@@ -90,15 +90,12 @@
                 <div class="pl-0.5 py-4 pr-5 rounded-r-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                   {{file.size! | memoryUnit}}
                 </div>
-
             }
 
             @if (!$last) {
                 <hr class="col-span-full mx-2" />
             }
-
         }
-
     </section>
 } @else if (!files.isLoading) {
     <div class="h-[70vh] flex flex-col justify-center items-center gap-8 text-slate-800 text-2xl font-medium">
@@ -107,8 +104,6 @@
     </div>
 }
 
-
-
 <div 
     class="absolute right-0 z-1 font-medium min-w-52"
     [ngClass]="{'invisible': isMenuHidden}" 
@@ -116,16 +111,25 @@
 >
     <div class="mt-2 w-full origin-top-right rounded-md bg-white shadow-lg ring-1 ring-slate-200">
         <div class="w-full flex flex-col">
-            <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="removeFile()">
+            <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="removeElement()">
                 <fa-icon [icon]="faTrashCan" size="lg" class="text-slate-700" />
                 <span class="pl-2 group-hover:underline underline-offset-2">Usuń</span>
             </button> 
-            @if (this.selectedId != undefined && this.files.fileTreeFromPath()[this.selectedId].type == 'file') {
-                <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="downloadFile()">
-                    <fa-icon [icon]="faDownload" size="lg" class="text-slate-700" />
-                    <span class="pl-2 group-hover:underline underline-offset-2">Pobierz</span>
-                </button> 
-            }
+            <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="downloadElement()">
+                <fa-icon [icon]="faDownload" size="lg" class="text-slate-700" />
+                <span class="pl-2 group-hover:underline underline-offset-2">Pobierz</span>
+            </button> 
+            <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="changeName()">
+                <fa-icon [icon]="faPen" size="lg" class="text-slate-700" />
+                <span class="pl-2 group-hover:underline underline-offset-2">Zmień nazwę</span>
+            </button> 
+            <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="moveElement()">
+                <fa-icon [icon]="faMove" size="lg" class="text-slate-700" />
+                <span class="pl-2 group-hover:underline underline-offset-2">Przenieś element</span>
+            </button> 
         </div>
     </div>
 </div>
+
+<app-confirm-dialog [file]="getSelectedFile(selectedId)" (dialogRef)="getConfirmDialogRef($event)" />
+<app-rename-dialog [file]="getSelectedFile(selectedId)" (dialogRef)="getRenameDialogRef($event)" />

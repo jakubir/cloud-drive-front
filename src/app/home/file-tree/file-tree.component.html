@@ -35,7 +35,7 @@
         </ul>
     }
 </aside>
-<app-new-folder-dialog (dialogRef)="getDialogRef($event)"/>
+<app-new-folder-dialog (dialogRef)="getDialogRef($event)" />
 
 <ng-template #fileTree let-branch="fileList" let-path="path">
     @for (file of branch; track $index) {

@@ -1,0 +1,6 @@
+<dialog #dialog class="backdrop:bg-opacity-70 w-[25vw] bg-white p-8 rounded-lg">
+    <div class="absolute right-0 top-0 h-12 w-12 flex justify-center items-center select-none">
+        <span class="text-3xl font-medium text-slate-400 hover:text-slate-500 transition-colors cursor-pointer px-2" (click)="closeDialog()">&times;</span>
+    </div>
+    <ng-content />
+</dialog>

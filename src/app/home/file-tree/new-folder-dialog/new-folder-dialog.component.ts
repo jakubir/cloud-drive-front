@@ -1,43 +1,29 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { FilesService } from '../../../files.service';
+import { DialogComponent } from '../../dialog/dialog.component';
 
 @Component({
   selector: 'app-new-folder-dialog',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, DialogComponent],
   templateUrl: './new-folder-dialog.component.html',
   styleUrl: './new-folder-dialog.component.css'
 })
 export class NewFolderDialogComponent implements AfterViewInit {
-  @ViewChild('newFolderDialog', { static: true }) dialog!: ElementRef<HTMLDialogElement>;
-  @ViewChild('form', { static: true }) form!: NgForm;
+  dialog!: ElementRef<HTMLDialogElement>;
   @Output() dialogRef = new EventEmitter<ElementRef<HTMLDialogElement>>();
+  @ViewChild('form', { static: true }) form!: NgForm;
   name: string = '';
-
-  @HostListener('window:mousedown', ['$event'])
-  onClick(event: MouseEvent) {
-    if (this.dialog.nativeElement.open) {
-      let con = true;
-      const search = (child: ChildNode) => {
-        if (child == event.target) 
-          con = false;
-        else
-          child.childNodes.forEach(search);
-      }  
-      this.dialog.nativeElement.childNodes.forEach(search);
-
-      if (con) {
-        this.dialog.nativeElement.close();
-        this.form.reset();
-      }
-    }
-  }
 
   constructor(private files: FilesService) { }
 
   ngAfterViewInit(): void {
     this.dialogRef.emit(this.dialog);
+  }
+
+  getDialogRef(ref: ElementRef<HTMLDialogElement>) {
+    this.dialog = ref;
   }
   
   createNewFolder(form: NgForm) {
@@ -50,19 +36,15 @@ export class NewFolderDialogComponent implements AfterViewInit {
   }
 
   isFolderNameTaken(): boolean {
-    if (this.files.fileTreeFromPath().filter((file) => file.name == this.name.trim()).length)
-      return true;
-
-    return false;
+    return this.files.isElementNameTaken(this.name);
   }
 
   isFolderNameIncorrect(): boolean {
-    if (this.name.trim().match(/[^<>:"/\\|?*]+/) == null) 
-      return true;
-    
-    if (this.name.trim().match(/[^<>:"/\\|?*]+/)![0].length == this.name.trim().length)
-      return false;
+    return this.files.isElementNameIncorrect(this.name);
+  }
 
-    return true;
+  closeDialog() {
+    this.dialog.nativeElement.close(); 
+    this.form.reset()
   }
 }
