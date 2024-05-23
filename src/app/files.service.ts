@@ -66,13 +66,13 @@ export class FilesService {
     if (this.path == 'root')
       return this.fileTree.children;
 
-    const pathElements = this.path.split('/');
+    const pathResource = this.path.split('/');
     let fileTreePart = this.fileTree.children;
 
-    for (let i = 1; i < pathElements.length; i++) {
+    for (let i = 1; i < pathResource.length; i++) {
 
       const foundDirectory = fileTreePart.find(
-        (child) => child.type == 'directory' && child.name == pathElements[i]
+        (child) => child.type == 'directory' && child.name == pathResource[i]
       );
 
       if (foundDirectory == undefined) {
@@ -153,17 +153,17 @@ export class FilesService {
     return fileList;
   }
 
-  isElementNameTaken(fileName: string): boolean {    
+  isResourceNameTaken(fileName: string): boolean {
     if (this.fileTreeFromPath().filter((file) => file.name == fileName.trim()).length)
       return true;
 
     return false;
   }
 
-  isElementNameIncorrect(fileName: string): boolean {
-    if (fileName.trim().match(/[^<>:"/\\|?*]+/) == null) 
+  isResourceNameIncorrect(fileName: string): boolean {
+    if (fileName.trim().match(/[^<>:"/\\|?*]+/) == null)
       return true;
-    
+
     if (fileName.trim().match(/[^<>:"/\\|?*]+/)![0].length == fileName.trim().length)
       return false;
 
@@ -230,9 +230,9 @@ export class FilesService {
             break;
           case 413:
             if (files.length > 1)
-              this.sendingFilesError = 'Conajmniej jeden z plików jest za duży';
-            else 
-              this.sendingFilesError = 'Wybrany plik jest za duży';
+              this.sendingFilesError = 'Conajmniej jeden z plików jest za duży (> 10 MB)';
+            else
+              this.sendingFilesError = 'Wybrany plik jest za duży (> 10 MB)';
             break;
           default:
             this.sendingFilesError = 'Przesyłanie plików nie powiodło się';
@@ -284,13 +284,13 @@ export class FilesService {
     })
   }
 
-  removeElement(name: string) {
+  removeResource(name: string) {
     this.auth.renewToken();
 
     const path = this.path.replace('root/', '').replace('root', '');
     let formData = new FormData();
 
-    formData.append('path', path + (path.length ? "/" : "") + name);    
+    formData.append('path', path + (path.length ? "/" : "") + name);
 
     this.http.delete(`${this.url}`, {
       headers: new HttpHeaders()
@@ -311,7 +311,7 @@ export class FilesService {
         this.sendingFilesAborted = true;
         switch (err.status) {
           case 400:
-            this.sendingFilesError = 'Plik już nie istnieje';
+            this.sendingFilesError = 'Wybrany zasób już nie istnieje';
             break;
           default:
             this.sendingFilesError = 'Usuwanie nie powiodło się';
@@ -324,7 +324,7 @@ export class FilesService {
     })
   }
 
-  renameElement(name: string, newName: string) {
+  renameResource(name: string, newName: string) {
     this.auth.renewToken();
 
     const path = this.path.replace('root/', '').replace('root', '');
@@ -350,6 +350,51 @@ export class FilesService {
         this.isSendingFiles = false;
         this.sendingFilesAborted = true;
         this.sendingFilesError = 'Nie udało się zmienić nazwy';
+        setTimeout(() => {
+          this.sendingFilesAborted = false;
+        }, 4500);
+      }
+    })
+  }
+
+  downloadResource(name: string) {
+    this.auth.renewToken();
+
+    let path = this.path.replace('root/', '').replace('root', '');
+    path += (path.length ? "/" : "") + name;
+    const buf = Buffer.from(path, 'utf8');
+    const locationId = buf
+      .toString('base64')
+      .replaceAll('=', '')
+      .replaceAll('+', '-')
+      .replaceAll('/', '_');
+
+    this.http.get(`${this.url}/${locationId}`, {
+      headers: new HttpHeaders()
+        .set('Authorization', 'Bearer ' + this.auth.getToken()),
+        responseType: 'blob',
+        observe: 'response'
+    }).subscribe({
+      next: (response) => {
+        const name = response.headers.get('content-disposition')?.split(';')[1]?.split('=')[1];
+        const blob = response.body as Blob;
+        let downloadLink = document.createElement('a');
+        downloadLink.download = name!;
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.click();
+
+        this.sendingFilesSuccessful = true;
+        this.sendingSuccessMessage = "Pobieranie " + name + " rozpoczęte";
+        setTimeout(() => {
+          this.sendingFilesSuccessful = false;
+        }, 4500);
+      },
+      error: (err: HttpErrorResponse) => {
+        console.log(err);
+
+        this.isSendingFiles = false;
+        this.sendingFilesAborted = true;
+        this.sendingFilesError = 'Nie udało się pobrać zasobu';
         setTimeout(() => {
           this.sendingFilesAborted = false;
         }, 4500);

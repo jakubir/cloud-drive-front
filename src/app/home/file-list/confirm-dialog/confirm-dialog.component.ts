@@ -35,6 +35,6 @@ export class ConfirmDialogComponent implements AfterViewInit {
 
   removeFile() {
     this.dialog.nativeElement.close();
-    this.files.removeElement(this.file.name);
+    this.files.removeResource(this.file.name);
   }
 }

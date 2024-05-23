@@ -141,8 +141,7 @@ export class FileListComponent {
 
   downloadElement() {
     this.hideMenu()
-
-    throw new Error('Method not implemented.');
+    this.files.downloadResource(this.getSelectedFile(this.selectedId).name);
   }
 
   changeName() {

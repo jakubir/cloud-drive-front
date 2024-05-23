@@ -36,11 +36,11 @@ export class NewFolderDialogComponent implements AfterViewInit {
   }
 
   isFolderNameTaken(): boolean {
-    return this.files.isElementNameTaken(this.name);
+    return this.files.isResourceNameTaken(this.name);
   }
 
   isFolderNameIncorrect(): boolean {
-    return this.files.isElementNameIncorrect(this.name);
+    return this.files.isResourceNameIncorrect(this.name);
   }
 
   closeDialog() {

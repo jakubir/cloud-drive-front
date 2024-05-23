@@ -23,7 +23,7 @@ export class RenameDialogComponent implements AfterViewInit {
 
   constructor (private files: FilesService) { }
   
-  ngAfterViewInit(): void {
+  ngAfterViewInit(): void {    
     this.dialogRef.emit(this.dialog);
   }
 
@@ -35,24 +35,24 @@ export class RenameDialogComponent implements AfterViewInit {
     this.dialog.nativeElement.close();
   }
 
-  renameElement(form: NgForm) {
-    const newName = form.value.elementName;
+  renameResource(form: NgForm) {
+    const newName = form.value.name;
 
     this.dialog.nativeElement.close();
     form.reset();
 
-    this.files.renameElement(this.file.name, newName);
+    this.files.renameResource(this.file.name, newName);
   }
 
-  isElementNameTaken(): boolean {
-    return this.files.isElementNameTaken(this.name);
+  isResourceNameTaken(): boolean {
+    return this.files.isResourceNameTaken(this.name);
   }
 
-  isElementNameIncorrect(): boolean {
-    return this.files.isElementNameIncorrect(this.name);
+  isResourceNameIncorrect(): boolean {
+    return this.files.isResourceNameIncorrect(this.name);
   }
 
-  isElementNameDiffrent(): boolean {
+  isResourceNameDiffrent(): boolean {
     return this.name != this.file.name;
   }
 }
