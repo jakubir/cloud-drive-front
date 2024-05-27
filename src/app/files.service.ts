@@ -16,6 +16,7 @@ import {File} from './types/file.type'
 import {IconDefinition} from '@fortawesome/fontawesome-svg-core';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import { Title } from '@angular/platform-browser';
+import { from, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -153,6 +154,24 @@ export class FilesService {
     return fileList;
   }
 
+  showSuccessAlert(message: string) {
+    this.isSendingFiles = false;
+    this.sendingFilesSuccessful = true;
+    this.sendingSuccessMessage = message;
+    setTimeout(() => {
+      this.sendingFilesSuccessful = false;
+    }, 4500);
+  }
+  
+  showErrorAlert(message: string) {
+    this.isSendingFiles = false;
+    this.sendingFilesAborted = true;
+    this.sendingFilesError = message;
+    setTimeout(() => {
+      this.sendingFilesAborted = false;
+    }, 4500);
+  }
+
   isResourceNameTaken(fileName: string): boolean {
     if (this.fileTreeFromPath().filter((file) => file.name == fileName.trim()).length)
       return true;
@@ -196,16 +215,16 @@ export class FilesService {
     });
   }
 
-  uploadFile(files: FileList) {
+  uploadFile(files: FileList, folder: string = '') {
     this.auth.renewToken();
-
+    let path = this.path.replace('root/', '').replace('root', '');
     let formData = new FormData();
     for (let i = 0; i < files.length; i++) {
       formData.append('files', files[i]);
     }
-    formData.append('path', this.path.replace('root/', '').replace('root', ''));
+    formData.append('path', path + ((path.length && folder.length) ? '/' : '') + folder);
 
-    this.isSendingFiles = true;
+    this.isSendingFiles = true;    
 
     this.http.post(`${this.url}`, formData, {
       headers: new HttpHeaders()
@@ -213,34 +232,29 @@ export class FilesService {
         .set('Accept', 'application/json')
     }).subscribe({
       next: () => {
-        this.isSendingFiles = false;
-        this.sendingFilesSuccessful = true;
-        this.sendingSuccessMessage = "Przesłano plik";
+        let message: string = "Przesłano plik";
+
         this.getFileList();
-        setTimeout(() => {
-          this.sendingFilesSuccessful = false;
-        }, 4500);
+        this.showSuccessAlert(message + (folder.length ? ' do folderu ' + folder : ''));
       },
       error: (err: HttpErrorResponse) => {
-        this.isSendingFiles = false;
-        this.sendingFilesAborted = true;
+        let message: string;
+
         switch (err.status) {
           case 400:
-            this.sendingFilesError = 'Nie można przesyłać pustych plików';
+            message = 'Nie można przesyłać pustych plików';
             break;
           case 413:
             if (files.length > 1)
-              this.sendingFilesError = 'Conajmniej jeden z plików jest za duży (> 10 MB)';
+              message = 'Conajmniej jeden z plików jest za duży (> 10 MB)';
             else
-              this.sendingFilesError = 'Wybrany plik jest za duży (> 10 MB)';
+              message = 'Wybrany plik jest za duży (> 10 MB)';
             break;
           default:
-            this.sendingFilesError = 'Przesyłanie plików nie powiodło się';
+            message = 'Przesyłanie plików nie powiodło się';
             break;
         }
-        setTimeout(() => {
-          this.sendingFilesAborted = false;
-        }, 4500);
+        this.showErrorAlert(message);
       }
     })
   }
@@ -259,27 +273,21 @@ export class FilesService {
         .set('Accept', 'application/json')
     }).subscribe({
       next: () => {
-        this.sendingFilesSuccessful = true;
-        this.sendingSuccessMessage = "Utworzono folder " + folderName;
         this.getFileList();
-        setTimeout(() => {
-          this.sendingFilesSuccessful = false;
-        }, 4500);
+        this.showSuccessAlert("Utworzono folder " + folderName);
       },
       error: (err: HttpErrorResponse) => {
-        this.isSendingFiles = false;
-        this.sendingFilesAborted = true;
+        let message: string;
+
         switch (err.status) {
           case 400:
-            this.sendingFilesError = 'Folder o podanej nazwie już istnieje';
+            message = 'Folder o podanej nazwie już istnieje';
             break;
           default:
-            this.sendingFilesError = 'Tworzenie folderu nie powiodło się';
+            message = 'Tworzenie folderu nie powiodło się';
             break;
         }
-        setTimeout(() => {
-          this.sendingFilesAborted = false;
-        }, 4500);
+        this.showErrorAlert(message);
       }
     })
   }
@@ -299,27 +307,21 @@ export class FilesService {
       body: formData
     }).subscribe({
       next: () => {
-        this.sendingFilesSuccessful = true;
-        this.sendingSuccessMessage = "Usunięto " + name;
         this.getFileList();
-        setTimeout(() => {
-          this.sendingFilesSuccessful = false;
-        }, 4500);
+        this.showSuccessAlert("Usunięto " + name);
       },
       error: (err: HttpErrorResponse) => {
-        this.isSendingFiles = false;
-        this.sendingFilesAborted = true;
+        let message: string;
+
         switch (err.status) {
           case 400:
-            this.sendingFilesError = 'Wybrany zasób już nie istnieje';
+            message = 'Wybrany zasób już nie istnieje';
             break;
           default:
-            this.sendingFilesError = 'Usuwanie nie powiodło się';
+            message = 'Usuwanie nie powiodło się';
             break;
         }
-        setTimeout(() => {
-          this.sendingFilesAborted = false;
-        }, 4500);
+        this.showErrorAlert(message);
       }
     })
   }
@@ -339,20 +341,11 @@ export class FilesService {
         .set('Accept', 'application/json')
     }).subscribe({
       next: () => {
-        this.sendingFilesSuccessful = true;
-        this.sendingSuccessMessage = "Zmieniono nazwę " + name + " na " + newName;
         this.getFileList();
-        setTimeout(() => {
-          this.sendingFilesSuccessful = false;
-        }, 4500);
+        this.showSuccessAlert("Zmieniono nazwę " + name + " na " + newName);
       },
       error: (err: HttpErrorResponse) => {
-        this.isSendingFiles = false;
-        this.sendingFilesAborted = true;
-        this.sendingFilesError = 'Nie udało się zmienić nazwy';
-        setTimeout(() => {
-          this.sendingFilesAborted = false;
-        }, 4500);
+        this.showErrorAlert('Nie udało się zmienić nazwy');
       }
     })
   }
@@ -362,7 +355,7 @@ export class FilesService {
 
     let path = this.path.replace('root/', '').replace('root', '');
     path += (path.length ? "/" : "") + name;
-    const buf = Buffer.from(path, 'utf8');
+    let buf = Buffer.from(path, 'utf8');
     const locationId = buf
       .toString('base64')
       .replaceAll('=', '')
@@ -376,28 +369,22 @@ export class FilesService {
         observe: 'response'
     }).subscribe({
       next: (response) => {
-        const name = response.headers.get('content-disposition')?.split(';')[1]?.split('=')[1];
+        const encodedName = response.headers.get('content-disposition')?.split(';')[1]?.split('=')[1];
+        buf = Buffer.from(encodedName!, 'base64');
+        const fileName = buf.toString('utf8');
+
         const blob = response.body as Blob;
         let downloadLink = document.createElement('a');
-        downloadLink.download = name!;
+        downloadLink.download = fileName!;
         downloadLink.href = URL.createObjectURL(blob);
         downloadLink.click();
 
-        this.sendingFilesSuccessful = true;
-        this.sendingSuccessMessage = "Pobieranie " + name + " rozpoczęte";
-        setTimeout(() => {
-          this.sendingFilesSuccessful = false;
-        }, 4500);
+        this.showSuccessAlert("Plik " + name + " dostępny do pobrania");
       },
       error: (err: HttpErrorResponse) => {
         console.log(err);
 
-        this.isSendingFiles = false;
-        this.sendingFilesAborted = true;
-        this.sendingFilesError = 'Nie udało się pobrać zasobu';
-        setTimeout(() => {
-          this.sendingFilesAborted = false;
-        }, 4500);
+        this.showErrorAlert('Nie udało się pobrać zasobu');
       }
     })
   }

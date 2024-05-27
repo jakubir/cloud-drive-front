@@ -46,9 +46,13 @@ export class FileListComponent {
   confirmDialogRef!: ElementRef<HTMLDialogElement>;
   renameDialogRef!: ElementRef<HTMLDialogElement>;
 
+  fileDragging: boolean = false;
+  dragId!: number;
+  @ViewChild('section') section!: ElementRef<HTMLElement>;
+
   constructor (public files: FilesService, public router: Router) {
     router.events.subscribe(() => { // clearing filters when file-list content changes
-      this.currentSort.order = 'DESC'; 
+      this.currentSort.order = 'DESC';
       this.sort('name');
     })
   }
@@ -58,16 +62,28 @@ export class FileListComponent {
     if (!this.isMenuHidden) {
       let con = true;
       const search = (child: ChildNode) => {
-        if (child == event.target) 
+        if (child == event.target)
           con = false;
         else
           child.childNodes.forEach(search);
-      }  
+      }
       this.contextMenu.nativeElement.childNodes.forEach(search);
 
-      if (con) 
+      if (con)
         this.hideMenu()
     }
+  }
+
+  @HostListener('window:dragover', ['$event'])
+  onDragOver(event: DragEvent) {
+    // event.preventDefault();
+    this.fileDragging = true;
+  }
+
+  @HostListener('window:dragleave', ['$event'])
+  onDragLeave(event: DragEvent) {
+    // event.preventDefault();
+    this.fileDragging = false;
   }
 
   getConfirmDialogRef(ref: ElementRef<HTMLDialogElement>) {
@@ -92,7 +108,7 @@ export class FileListComponent {
     return latestDate!;
   }
 
-  sort(sortBy: sort["sortBy"]) {    
+  sort(sortBy: sort["sortBy"]) {
     if (this.currentSort.sortBy == sortBy) {
       this.currentSort.order = this.currentSort.order == "ASC" ? "DESC" : "ASC";
       this.faArrow = this.currentSort.order == "ASC" ? faCaretDown : faCaretUp;
@@ -100,7 +116,7 @@ export class FileListComponent {
       this.currentSort.order = 'ASC';
       this.faArrow = faCaretDown;
     }
-    this.currentSort.sortBy = sortBy;    
+    this.currentSort.sortBy = sortBy;
 
     this.files.pathFileTree = this.files.sortFileList(this.files.pathFileTree, false, this.currentSort.sortBy, this.currentSort.order);
   }
@@ -116,13 +132,39 @@ export class FileListComponent {
     return this.files.fileTreeFromPath()[selectedId];
   }
 
+  getTargetParent(event: Event): EventTarget {
+    let parent = (event.target as HTMLElement);
+
+    while (!parent!.hasAttribute('data-id'))
+      if (parent!.parentElement != null)
+        parent = parent!.parentElement!;
+      else 
+        break;
+    
+    return parent as EventTarget;
+  }
+
+  getRelatedTargetParent(event: DragEvent): EventTarget {
+    let parent = (event.relatedTarget as HTMLElement);
+
+    while (!parent!.hasAttribute('data-id'))
+      if (parent!.parentElement != null)
+        parent = parent!.parentElement!;
+      else 
+        break;
+    
+    return parent as EventTarget;
+  }
+
   openMenu(event: MouseEvent) {
     event.preventDefault();
     
+    const target = this.getTargetParent(event);
+
     const x = (event.clientX - this.contextMenu.nativeElement.offsetLeft);
     const y = (event.clientY - this.contextMenu.nativeElement.offsetTop - this.contextMenu.nativeElement.offsetHeight/2);
-    
-    this.selectedId = Number((event.target as HTMLDivElement).getAttribute('data-id'));
+
+    this.selectedId = Number((target as HTMLElement).getAttribute('data-id'));
     this.contextMenu.nativeElement.style.transform = "translate("+ (x + 5) + "px," + y + "px)";
     this.isMenuHidden = false;
 
@@ -153,5 +195,61 @@ export class FileListComponent {
     this.hideMenu()
 
     throw new Error('Method not implemented.');
+  }
+
+  dragOver(event: DragEvent) {
+    event.preventDefault();
+
+    const target = this.getTargetParent(event);
+
+    this.dragId = Number((target as HTMLElement).getAttribute('data-id'));    
+
+    if (
+      (target as HTMLElement).getAttribute('data-id') != null &&
+      this.files.fileTreeFromPath()[this.dragId].type == 'directory'
+    )
+      document.querySelectorAll(`[data-id="${this.dragId}"]`).forEach((e) => e.classList.add('drag-over'));
+    else 
+      this.section.nativeElement.classList.add('drag-over');
+  }
+
+  dragLeave(event: DragEvent) {
+    event.preventDefault();
+
+    const target = this.getTargetParent(event);
+    const relatedTarget = this.getRelatedTargetParent(event);
+
+    this.dragId = Number((target as HTMLElement).getAttribute('data-id'));
+
+    if ((target as HTMLElement).getAttribute('data-id') == null)
+      this.section.nativeElement.classList.remove('drag-over');
+    else if (
+      this.files.fileTreeFromPath()[this.dragId].type == 'directory' &&
+      (target as HTMLElement).getAttribute('data-id') != (relatedTarget as HTMLElement).getAttribute('data-id')
+    )     
+      document.querySelectorAll(`[data-id="${this.dragId}"]`).forEach((e) => e.classList.remove('drag-over'));
+  }
+ 
+  drop(event: DragEvent) {
+    event.preventDefault();
+
+    const target = this.getTargetParent(event);
+    let folder = '';
+
+    this.dragId = Number((target as HTMLElement).getAttribute('data-id'));
+
+    this.section.nativeElement.classList.remove('drag-over');
+    document.querySelectorAll(`[data-id="${this.dragId}"]`).forEach((e) => e.classList.remove('drag-over'));
+
+    if (
+      (target as HTMLElement).getAttribute('data-id') != null &&
+      this.files.fileTreeFromPath()[this.dragId].type == 'directory'
+    )
+      folder = this.files.fileTreeFromPath()[this.dragId].name;
+
+    if (event.dataTransfer?.files)
+      this.files.uploadFile(event.dataTransfer?.files, folder);
+    else
+      this.files.showErrorAlert('Nie można przesłać wybranego pliku');
   }
 }

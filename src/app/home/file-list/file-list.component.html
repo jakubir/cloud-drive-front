@@ -1,50 +1,42 @@
 <app-directory-breadcrumb />
 @if (files.pathFileTree.length) {
-    <section 
-        class="bg-white px-5 py-2 max-h-[calc(100vh_-_3rem_-_4rem_-_4.25rem)] overflow-auto rounded-lg grid grid-cols-[3.25rem_minmax(16.666%,_max-content)_1fr_auto] sm:grid-cols-[3.25rem_minmax(16.666%,_max-content)_10%_auto]"
-        (scroll)="hideMenu()"
+    <section
+        class="bg-white px-4.5 py-1.5 border-x-2 border-y-2 border-transparent max-h-[calc(100vh_-_3rem_-_4rem_-_4.25rem)] overflow-auto rounded-lg grid grid-cols-[3.25rem_minmax(16.666%,_max-content)_1fr_auto] sm:grid-cols-[3.25rem_minmax(16.666%,_max-content)_10%_auto]"
+        (scroll)="hideMenu()" 
+        (dragover)="dragOver($event)"
+        (dragleave)="dragLeave($event)"
+        (drop)="drop($event)"
+        #section
     >
             <div class="py-4 pr-4 pl-5"></div>
             <div
-                class="min-w-52 font-semibold group underline-offset-2 cursor-pointer py-4 pr-4"
-                [title]="
-                    currentSort.sortBy == 'name' ?
-                    'Sortuj po nazwie (' + (currentSort.order == 'ASC' ? 'A-Z' : 'Z-A') + ')' :
-                    ''
-                "
+                class="min-w-52 font-semibold py-4 pr-4"
+                [title]="'Sortuj po nazwie (' + (currentSort.sortBy != 'name' || currentSort.order == 'ASC' ? 'A-Z' : 'Z-A') + ')'"
             >
-                <button (click)="sort('name')">
-                    <span class="group-hover:underline pr-1.5">Nazwa</span>
+                <button class="group cursor-pointer" (click)="sort('name')">
+                    <span class="group-hover:underline underline-offset-2 pr-1.5">Nazwa</span>
                     @if (currentSort.sortBy == 'name') {
                         <fa-icon [icon]="faArrow" />
                     }
                 </button>
             </div>
             <div
-                class="font-semibold group underline-offset-2 cursor-pointer py-4 pr-4"
-                [title]="
-                    currentSort.sortBy == 'date' ?
-                    'Sortuj po dacie ' + (currentSort.order == 'ASC' ? 'od najstarszej do najnowszej' : 'od najnowszej do najstarszej') :
-                    ''
-                "
+                class="font-semibold py-4 pr-4"
+                [title]="'Sortuj po dacie ' + (currentSort.sortBy != 'date' || currentSort.order == 'ASC' ? 'od najnowszej do najstarszej' : 'od najstarszej do najnowszej')"
             >
-                <button (click)="sort('date')">
-                    <span class="group-hover:underline pr-1.5">Data</span>
+                <button class="group cursor-pointer" (click)="sort('date')">
+                    <span class="group-hover:underline underline-offset-2 pr-1.5">Data</span>
                     @if (currentSort.sortBy == 'date') {
                         <fa-icon [icon]="faArrow" />
                     }
                 </button>
             </div>
             <div
-                class="font-semibold group underline-offset-2 cursor-pointer py-4 pr-5"
-                [title]="
-                    currentSort.sortBy == 'size' ?
-                    'Sortuj po rozmiarze ' + (currentSort.order == 'ASC' ? 'od najmniejszego do największego' : 'od największego do najmniejszego') :
-                    ''
-                "
+                class="font-semibold underline-offset-2 py-4 pr-5"
+                [title]="'Sortuj po rozmiarze ' + (currentSort.sortBy != 'size' || currentSort.order == 'ASC' ? 'od najmniejszego do największego' : 'od największego do najmniejszego')"
             >
-                <button (click)="sort('size')">
-                    <span class="group-hover:underline pr-1.5">Rozmiar pliku</span>
+                <button class="group cursor-pointer" (click)="sort('size')">
+                    <span class="group-hover:underline underline-offset-2 pr-1.5">Rozmiar pliku</span>
                     @if (currentSort.sortBy == 'size') {
                         <fa-icon [icon]="faArrow" />
                     }
@@ -55,39 +47,52 @@
 
             @if (file.type == 'file' && !files.isLoading) {
 
-                <div class="pl-5.5 pr-4 py-4 rounded-l-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div class="pl-5 py-3.5 pr-4 border-l-2 border-y-2 border-transparent rounded-l-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                     <fa-icon
                         [icon]="files.getIcon(file.name.split('.')[file.name.split('.').length - 1].toLowerCase())"
                         size="lg"
                         class="text-slate-600"
+                        (contextmenu)="openMenu($event)"
                     />
                 </div>
-                <div class="pl-0.5 pr-4 py-4 element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                     {{file.name}}
                 </div>
-                <div class="pl-0.5 pr-4 py-4 element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                     {{file.date | date:'shortDate'}}
                 </div>
-                <div class="pl-0.5 py-4 pr-5 rounded-r-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">  
+                <div class="pl-0.5 py-3.5 pr-3 border-y-2 border-r-2 border-transparent rounded-r-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                     {{file.size! | memoryUnit}}
                 </div>
 
             } @else if (!files.isLoading) {
 
-                <div class="pl-5.5 py-4 pr-4 rounded-l-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
-                    <fa-icon [icon]="faFolder" size="lg" class="text-amber-300" />
+                <div class="pl-5 py-3.5 pr-4 border-l-2 border-y-2 border-transparent rounded-l-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                    <fa-icon 
+                        [icon]="faFolder" 
+                        size="lg" 
+                        class="text-amber-300" 
+                        (contextmenu)="openMenu($event)"
+                    />
                 </div>
                 <div
-                    class="pl-0.5 select-none py-4 pr-4 element transition-colors"
+                    class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent select-none element transition-[background-color]"
                     (contextmenu)="openMenu($event)"
                     [attr.data-id]="$index"
                 >
-                    <span class="cursor-pointer hover:underline underline-offset-2" (click)="files.changeLocation(files.path + '/' + file.name)">{{file.name}}</span>
+                    <span
+                      class="cursor-pointer hover:underline underline-offset-2"
+                      [title]="'Przejdź do folderu ' + file.name"
+                      (click)="files.changeLocation(files.path + '/' + file.name)"
+                      (contextmenu)="openMenu($event)"
+                    >
+                      {{file.name}}
+                    </span>
                 </div>
-                <div class="pl-0.5 py-4 pr-4 element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                     {{getLatestChangeDate(file) | date:'shortDate'}}
                 </div>
-                <div class="pl-0.5 py-4 pr-5 rounded-r-lg element transition-colors" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div class="pl-0.5 py-3.5 pr-3 border-y-2 border-r-2 border-transparent rounded-r-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                   {{file.size! | memoryUnit}}
                 </div>
             }
@@ -104,9 +109,9 @@
     </div>
 }
 
-<div 
+<div
     class="absolute right-0 z-1 font-medium min-w-52"
-    [ngClass]="{'invisible': isMenuHidden}" 
+    [ngClass]="{'invisible': isMenuHidden}"
     #contextMenu
 >
     <div class="mt-2 w-full origin-top-right rounded-md bg-white shadow-lg ring-1 ring-slate-200">
@@ -114,19 +119,19 @@
             <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="removeElement()">
                 <fa-icon [icon]="faTrashCan" size="lg" class="text-slate-700" />
                 <span class="pl-2 group-hover:underline underline-offset-2">Usuń</span>
-            </button> 
+            </button>
             <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="downloadElement()">
                 <fa-icon [icon]="faDownload" size="lg" class="text-slate-700" />
                 <span class="pl-2 group-hover:underline underline-offset-2">Pobierz</span>
-            </button> 
+            </button>
             <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="changeName()">
                 <fa-icon [icon]="faPen" size="lg" class="text-slate-700" />
                 <span class="pl-2 group-hover:underline underline-offset-2">Zmień nazwę</span>
-            </button> 
+            </button>
             <button class="cursor-pointer hover:bg-zinc-100 first:rounded-t-md last:rounded-b-md group block w-full px-4 py-2.5 text-left text-sm" (click)="moveElement()">
                 <fa-icon [icon]="faMove" size="lg" class="text-slate-700" />
                 <span class="pl-2 group-hover:underline underline-offset-2">Przenieś element</span>
-            </button> 
+            </button>
         </div>
     </div>
 </div>
