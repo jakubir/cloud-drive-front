@@ -16,7 +16,6 @@ import {File} from './types/file.type'
 import {IconDefinition} from '@fortawesome/fontawesome-svg-core';
 import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import { Title } from '@angular/platform-browser';
-import { from, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -31,6 +30,9 @@ export class FilesService {
     children: []
   };
   public pathFileTree: File[] = [];
+
+  public movePath: string = '';
+  public movePathFileTree: File[] = [];
 
   public afterLoginFileList: boolean = false;
   public isLoading: boolean = true;
@@ -62,12 +64,12 @@ export class FilesService {
     this.pathFileTree = [];
   }
 
-  fileTreeFromPath(): File[] {
+  fileTreeFromPath(path: string = this.path): File[] {
 
-    if (this.path == 'root')
+    if (path == 'root')
       return this.fileTree.children;
 
-    const pathResource = this.path.split('/');
+    const pathResource = path.split('/');
     let fileTreePart = this.fileTree.children;
 
     for (let i = 1; i < pathResource.length; i++) {
@@ -78,7 +80,7 @@ export class FilesService {
 
       if (foundDirectory == undefined) {
         this.router.navigateByUrl('/cm9vdA');
-        this.path = 'root';
+        path = 'root';
 
         return this.fileTree.children;
       } else {
@@ -123,6 +125,11 @@ export class FilesService {
     this.path = path;
     this.pathFileTree = this.sortFileList(this.fileTreeFromPath());
     this.title.setTitle(`${pathParts[pathParts.length - 1]} - J\'Drive`);
+  }
+
+  changeMoveLocation(path: string) {
+    this.movePath = path;
+    this.movePathFileTree = this.fileTreeFromPath(path);
   }
 
   sortFileList(fileList: File[], recursive = false, sortBy: 'name' | 'date' | 'size' = 'name', order: 'ASC' | 'DESC' = 'ASC') {
@@ -385,6 +392,34 @@ export class FilesService {
         console.log(err);
 
         this.showErrorAlert('Nie udało się pobrać zasobu');
+      }
+    })
+  }
+
+  moveResource(path: string, newPath: string) {
+    this.auth.renewToken();
+
+    path = path.replace('root/', '').replace('root', '');
+    newPath = newPath.replace('root/', '').replace('root', '');
+    let formData = new FormData();
+
+    formData.append('path', path);
+    formData.append('newPath', newPath + (newPath.length ? "/" : "") + path.split('/').slice(-1));
+
+    console.log(formData.get('path'));
+    console.log(formData.get('newPath'));
+
+    this.http.patch(`${this.url}/move`, formData, {
+      headers: new HttpHeaders()
+        .set('Authorization', 'Bearer ' + this.auth.getToken())
+        .set('Accept', 'application/json')
+    }).subscribe({
+      next: () => {
+        this.getFileList();
+        this.showSuccessAlert("Przeniesiono " + path.split('/').slice(-1) + " do " + newPath);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.showErrorAlert('Nie udało się przenieść zasobu');
       }
     })
   }

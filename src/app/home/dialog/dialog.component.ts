@@ -1,9 +1,10 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Output, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-dialog',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.css'
 })
@@ -21,8 +22,11 @@ export class DialogComponent implements AfterViewInit {
           con = false;
         else
           child.childNodes.forEach(search);
-      }  
-      this.dialog.nativeElement.childNodes.forEach(search);
+      }
+      if (event.target != this.dialog.nativeElement)  
+        this.dialog.nativeElement.childNodes.forEach(search);
+      else
+        con = true;
 
       if (con) {
         this.closeDialog()

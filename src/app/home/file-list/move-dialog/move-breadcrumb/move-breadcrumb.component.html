@@ -1,0 +1,19 @@
+<div class="select-none">
+    @for(part of files.movePath.replace('root', 'Twój dysk').split('/'); track $index) {
+        @if ($last) {
+            <span
+                class="font-bold text-slate-900"
+                [title]="'Jesteś w folderze ' + part"
+            >{{part}}</span>
+        } @else {
+            <span
+                class="cursor-pointer py-2 rounded text-slate-700 hover:text-slate-800 hover:bg-zinc-200 transition-colors"
+                [title]="'Przejdź do folderu ' + part"
+                (click)="files.changeMoveLocation(files.movePath.split('/').slice(0, $index - files.movePath.split('/').length + 1).join('/'))"
+            >{{part}}</span>
+            <span class="px-2 relative top-0.5 text-slate-600">
+                <fa-icon size="xs" [icon]="faAngleRight" />
+            </span>
+        }
+    }
+</div>

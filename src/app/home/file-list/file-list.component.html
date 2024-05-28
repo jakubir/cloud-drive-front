@@ -90,7 +90,7 @@
                     </span>
                 </div>
                 <div class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
-                    {{getLatestChangeDate(file) | date:'shortDate'}}
+                    {{file.date | date:'shortDate'}}
                 </div>
                 <div class="pl-0.5 py-3.5 pr-3 border-y-2 border-r-2 border-transparent rounded-r-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
                   {{file.size! | memoryUnit}}
@@ -138,3 +138,4 @@
 
 <app-confirm-dialog [file]="getSelectedFile(selectedId)" (dialogRef)="getConfirmDialogRef($event)" />
 <app-rename-dialog [file]="getSelectedFile(selectedId)" (dialogRef)="getRenameDialogRef($event)" />
+<app-move-dialog [pathToFile]="files.path + '/' + getSelectedFile(selectedId).name" (dialogRef)="getMoveDialogRef($event)" />

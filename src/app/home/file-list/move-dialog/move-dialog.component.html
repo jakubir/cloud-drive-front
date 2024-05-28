@@ -1,0 +1,84 @@
+<app-dialog class="h-[33vh]" (dialogClosed)="closeDialog()" (dialogRef)="getDialogRef($event)">
+    <app-move-breadcrumb  />
+    @if (getDirectories(files.movePathFileTree).length) {
+        <div
+            class="bg-white px-4.5 py-1.5 border-x-2 border-y-2 border-transparent h-[33vh] overflow-auto rounded-lg grid grid-cols-[3.25rem_1fr] auto-rows-min"
+        >    
+            @for (item of getDirectories(files.movePathFileTree); track $index) {
+    
+                @if (!files.isLoading) {
+
+                    <div 
+                        class="pl-5 py-3.5 pr-4 border-l-2 border-y-2 border-transparent rounded-l-lg transition-[background-color]"
+                    >
+                        <fa-icon 
+                            [icon]="faFolder" 
+                            size="lg" 
+                            class="text-amber-300"
+                            [ngClass]="{'text-amber-100': (files.movePath + '/' + item.name) == (pathToFile)}"
+                        />
+                    </div>
+                    <div
+                        class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent rounded-r-lg select-none transition-[background-color]"
+                        [ngClass]="{'text-zinc-300': (files.movePath + '/' + item.name) == (pathToFile)}"
+                    >
+                        @if ((files.movePath + '/' + item.name) == (pathToFile)) {
+                            {{item.name}}
+                        } @else {
+                            <span
+                              class="cursor-pointer hover:underline underline-offset-2"
+                              [title]="'Przejdź do folderu ' + item.name"
+                              (click)="files.changeMoveLocation(files.movePath + '/' + item.name)"
+                            >
+                              {{item.name}}
+                            </span>
+                        }
+                    </div>
+                }
+    
+                @if (!$last) {
+                    <hr class="col-span-full mx-2" />
+                }
+            }
+        </div>
+    } @else if (!files.isLoading) {
+        <div class="flex flex-col justify-center items-center gap-8 h-[33vh] text-slate-800 font-medium">
+            <fa-icon [icon]="faFolderOpen" class="text-amber-300 -rotate-12" size="6x"/>
+            Ten folder nie podkatalogów
+        </div>
+    }
+    <div class="mt-5 grid grid-cols-[75%_min-content] grid-rows-2 justify-between">
+        <div class="w-3/4 flex">
+            <span class="pr-1.5">Przenosisz:</span>
+            <span class="font-semibold truncate" [title]="pathToFile.split('/').slice(-1)">
+                @if (pathToFile.split('/').slice(-1).join().split('.').slice(0, -1).length) {
+                        {{pathToFile.split('/').slice(-1).join().split('.').slice(0, -1).join('.')}}
+                } @else {
+                    {{pathToFile.split('/').slice(-1)}}
+                }
+            </span>
+            @if (pathToFile.split('/').slice(-1).join().split('.').slice(0, -1).length) {
+                <span class="font-semibold" [title]="pathToFile.split('/').slice(-1)">
+                    .{{pathToFile.split('/').slice(-1).join().split('.').slice(-1).join('.')}}
+                </span>
+            }
+        </div>
+        <div class="row-span-2 flex items-end">
+            <button 
+                type="submit"
+                [title]="files.movePath == (pathToFile.split('/').slice(0, -1).join('/')) ? 'Zasoby można przenosić tylko do innych folderów' : 'Przenieś do ' + files.movePath.replace('root', 'Twój dysk').split('/').slice(-1)"
+                [disabled]="files.movePath == (pathToFile.split('/').slice(0, -1).join('/'))"
+                class="inline-flex justify-center rounded-md bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500 w-auto transition-colors"
+                (click)="moveResource()"
+            >
+                Przenieś
+            </button>
+        </div>
+        <div class="w-3/4 flex col">
+            <span class="pr-1.5">Do:</span>
+            <span class="font-semibold truncate" [title]="pathToFile.split('/').slice(-1)">
+                {{files.movePath.replace('root', 'Twój dysk').split('/').slice(-1)}}
+            </span>
+        </div>
+    </div>
+</app-dialog>

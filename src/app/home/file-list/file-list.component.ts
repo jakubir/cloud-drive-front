@@ -11,6 +11,7 @@ import { DirectoryBreadcrumbComponent } from './directory-breadcrumb/directory-b
 import { FormsModule } from '@angular/forms';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 import { RenameDialogComponent } from './rename-dialog/rename-dialog.component';
+import { MoveDialogComponent } from './move-dialog/move-dialog.component';
 
 interface sort {
   sortBy: "name" | "date" | "size",
@@ -20,7 +21,7 @@ interface sort {
 @Component({
   selector: 'app-file-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, FontAwesomeModule, MemoryUnitPipe, DirectoryBreadcrumbComponent, ConfirmDialogComponent, RenameDialogComponent],
+  imports: [CommonModule, FormsModule, FontAwesomeModule, MemoryUnitPipe, DirectoryBreadcrumbComponent, ConfirmDialogComponent, RenameDialogComponent, MoveDialogComponent],
   templateUrl: './file-list.component.html',
   styleUrl: './file-list.component.css'
 })
@@ -45,6 +46,7 @@ export class FileListComponent {
 
   confirmDialogRef!: ElementRef<HTMLDialogElement>;
   renameDialogRef!: ElementRef<HTMLDialogElement>;
+  moveDialogRef!: ElementRef<HTMLDialogElement>;
 
   fileDragging: boolean = false;
   dragId!: number;
@@ -94,18 +96,8 @@ export class FileListComponent {
     this.renameDialogRef = ref
   }
 
-  getLatestChangeDate(file: File): string {
-    const dates = file.children.map((child) => child.date);
-
-    if (!dates.length) return '';
-
-    let latestDate = dates[0];
-
-    for (const date of dates)
-      if (new Date(date!).getTime() > new Date(latestDate!).getTime())
-        latestDate = date;
-
-    return latestDate!;
+  getMoveDialogRef(ref: ElementRef<HTMLDialogElement>) {
+    this.moveDialogRef = ref
   }
 
   sort(sortBy: sort["sortBy"]) {
@@ -122,14 +114,16 @@ export class FileListComponent {
   }
 
   getSelectedFile(selectedId: number): File {
-    if (selectedId == undefined)
+    const file: File = this.files.fileTreeFromPath()[selectedId];
+    
+    if (file == undefined)
       return {
         name: '',
         type: 'file',
         children: []
       };
 
-    return this.files.fileTreeFromPath()[selectedId];
+    return file;
   }
 
   getTargetParent(event: Event): EventTarget {
@@ -193,8 +187,9 @@ export class FileListComponent {
 
   moveElement() {
     this.hideMenu()
-
-    throw new Error('Method not implemented.');
+    this.files.movePath = this.files.path;
+    this.files.movePathFileTree = this.files.pathFileTree;
+    this.moveDialogRef.nativeElement.showModal();
   }
 
   dragOver(event: DragEvent) {

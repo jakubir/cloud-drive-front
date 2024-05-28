@@ -16,7 +16,7 @@ import {Router} from "@angular/router";
 export class LoginComponent implements OnInit {
   faCloud = faCloudArrowUp;
   faSpinner = faSpinner;
-  passwordField: string = 'password'; //TODO usunąć domyślne hasło
+  passwordField: string = '';
   emailNotValid: boolean = false;
   passwordNotValid: boolean = false;
 
