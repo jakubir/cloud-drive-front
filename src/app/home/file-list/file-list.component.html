@@ -47,38 +47,74 @@
 
             @if (file.type == 'file' && !files.isLoading) {
 
-                <div class="pl-5 py-3.5 pr-4 border-l-2 border-y-2 border-transparent rounded-l-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div 
+                    class="pl-5 py-3.5 pr-4 border-l-2 border-y-2 border-transparent rounded-l-lg element transition-[background-color]" 
+                    [attr.data-id]="$index" 
+                    draggable="true" 
+                    (dragstart)="dragStart($event)" 
+                    (dragend)="dragEnd($event)"
+                    (contextmenu)="openMenu($event)" 
+                >
                     <fa-icon
                         [icon]="files.getIcon(file.name.split('.')[file.name.split('.').length - 1].toLowerCase())"
                         size="lg"
                         class="text-slate-600"
-                        (contextmenu)="openMenu($event)"
                     />
                 </div>
-                <div class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div 
+                    class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" 
+                    [attr.data-id]="$index" 
+                    draggable="true" 
+                    (dragstart)="dragStart($event)" 
+                    (dragend)="dragEnd($event)"
+                    (contextmenu)="openMenu($event)" 
+                >
                     {{file.name}}
                 </div>
-                <div class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div 
+                    class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" 
+                    [attr.data-id]="$index" 
+                    draggable="true" 
+                    (dragstart)="dragStart($event)" 
+                    (dragend)="dragEnd($event)"
+                    (contextmenu)="openMenu($event)" 
+                >
                     {{file.date | date:'shortDate'}}
                 </div>
-                <div class="pl-0.5 py-3.5 pr-3 border-y-2 border-r-2 border-transparent rounded-r-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div 
+                    class="pl-0.5 py-3.5 pr-3 border-y-2 border-r-2 border-transparent rounded-r-lg element transition-[background-color]"
+                    [attr.data-id]="$index" 
+                    draggable="true" 
+                    (dragstart)="dragStart($event)" 
+                    (dragend)="dragEnd($event)"
+                    (contextmenu)="openMenu($event)" 
+                >
                     {{file.size! | memoryUnit}}
                 </div>
 
             } @else if (!files.isLoading) {
 
-                <div class="pl-5 py-3.5 pr-4 border-l-2 border-y-2 border-transparent rounded-l-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div 
+                    class="pl-5 py-3.5 pr-4 border-l-2 border-y-2 border-transparent rounded-l-lg element transition-[background-color]" 
+                    [attr.data-id]="$index"
+                    draggable="true" 
+                    (dragstart)="dragStart($event)" 
+                    (dragend)="dragEnd($event)"
+                    (contextmenu)="openMenu($event)" 
+                >
                     <fa-icon 
                         [icon]="faFolder" 
                         size="lg" 
-                        class="text-amber-300" 
-                        (contextmenu)="openMenu($event)"
+                        class="text-amber-300"
                     />
                 </div>
                 <div
                     class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent select-none element transition-[background-color]"
-                    (contextmenu)="openMenu($event)"
                     [attr.data-id]="$index"
+                    draggable="true" 
+                    (dragstart)="dragStart($event)" 
+                    (dragend)="dragEnd($event)"
+                    (contextmenu)="openMenu($event)"
                 >
                     <span
                       class="cursor-pointer hover:underline underline-offset-2"
@@ -89,10 +125,24 @@
                       {{file.name}}
                     </span>
                 </div>
-                <div class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div 
+                    class="pl-0.5 py-3.5 pr-4 border-y-2 border-transparent element transition-[background-color]" 
+                    [attr.data-id]="$index"
+                    draggable="true" 
+                    (dragstart)="dragStart($event)" 
+                    (dragend)="dragEnd($event)"
+                    (contextmenu)="openMenu($event)" 
+                >
                     {{file.date | date:'shortDate'}}
                 </div>
-                <div class="pl-0.5 py-3.5 pr-3 border-y-2 border-r-2 border-transparent rounded-r-lg element transition-[background-color]" (contextmenu)="openMenu($event)" [attr.data-id]="$index">
+                <div 
+                    class="pl-0.5 py-3.5 pr-3 border-y-2 border-r-2 border-transparent rounded-r-lg element transition-[background-color]" 
+                    draggable="true" 
+                    (dragstart)="dragStart($event)" 
+                    (dragend)="dragEnd($event)"
+                    (contextmenu)="openMenu($event)" 
+                    [attr.data-id]="$index"
+                >
                   {{file.size! | memoryUnit}}
                 </div>
             }

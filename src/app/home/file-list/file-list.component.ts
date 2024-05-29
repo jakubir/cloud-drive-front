@@ -50,6 +50,8 @@ export class FileListComponent {
 
   fileDragging: boolean = false;
   dragId!: number;
+  offScreenDiv!: HTMLDivElement;
+  dragData!: number;
   @ViewChild('section') section!: ElementRef<HTMLElement>;
 
   constructor (public files: FilesService, public router: Router) {
@@ -209,8 +211,6 @@ export class FileListComponent {
   }
 
   dragLeave(event: DragEvent) {
-    event.preventDefault();
-
     const target = this.getTargetParent(event);
     const relatedTarget = this.getRelatedTargetParent(event);
 
@@ -227,14 +227,14 @@ export class FileListComponent {
  
   drop(event: DragEvent) {
     event.preventDefault();
-
-    const target = this.getTargetParent(event);
-    let folder = '';
-
-    this.dragId = Number((target as HTMLElement).getAttribute('data-id'));
-
+    event.stopPropagation();
     this.section.nativeElement.classList.remove('drag-over');
     document.querySelectorAll(`[data-id="${this.dragId}"]`).forEach((e) => e.classList.remove('drag-over'));
+    
+    const target = this.getTargetParent(event);
+    let folder = '';
+    
+    this.dragId = Number((target as HTMLElement).getAttribute('data-id'));
 
     if (
       (target as HTMLElement).getAttribute('data-id') != null &&
@@ -242,9 +242,42 @@ export class FileListComponent {
     )
       folder = this.files.fileTreeFromPath()[this.dragId].name;
 
-    if (event.dataTransfer?.files)
+    if (!event.dataTransfer?.files)
+      this.files.showErrorAlert('Nie można przesłać pliku');
+    else if (event.dataTransfer?.files.length! > 0)
       this.files.uploadFile(event.dataTransfer?.files, folder);
-    else
-      this.files.showErrorAlert('Nie można przesłać wybranego pliku');
+    else {
+      const resource = this.files.pathFileTree[this.dragData];
+      const path = this.files.path + '/' + resource.name;
+      const newPath = this.files.path + (folder.length > 0 ? '/' + folder : '');
+      
+      if (path != newPath + '/' + resource.name)
+        this.files.moveResource(path, newPath);
+    }
+  }
+
+  dragStart(event: DragEvent) {
+    const target = this.getTargetParent(event);
+    const id = (target as HTMLElement).getAttribute('data-id')!;
+    const element = document.querySelector(`[data-id="${id}"]`)!.firstChild!.firstChild!;
+    const color = this.files.pathFileTree[Number(id)].type == 'file' ? 'text-slate-600' : 'text-amber-300';
+    
+    const wrapper = document.createElement('div');
+    wrapper.style.fontSize = '3rem';
+    wrapper.appendChild(element.cloneNode(true));
+    
+    this.offScreenDiv = document.createElement('div');
+    this.offScreenDiv.style.position = 'absolute'; 
+    this.offScreenDiv.style.left = '-9999px';
+    this.offScreenDiv.classList.add(color);
+    this.offScreenDiv.appendChild(wrapper);
+    document.body.appendChild(this.offScreenDiv);
+    
+    event.dataTransfer?.setDragImage(wrapper, 20, 20);
+    this.dragData = Number(id);
+  }
+  
+  dragEnd(event: DragEvent) {
+    document.body.removeChild(this.offScreenDiv);
   }
 }

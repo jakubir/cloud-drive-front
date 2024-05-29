@@ -163,8 +163,10 @@ export class FilesService {
 
   showSuccessAlert(message: string) {
     this.isSendingFiles = false;
+    this.sendingFilesAborted = false;
     this.sendingFilesSuccessful = true;
     this.sendingSuccessMessage = message;
+    console.log('halo');
     setTimeout(() => {
       this.sendingFilesSuccessful = false;
     }, 4500);
@@ -172,6 +174,7 @@ export class FilesService {
   
   showErrorAlert(message: string) {
     this.isSendingFiles = false;
+    this.sendingFilesSuccessful = false;
     this.sendingFilesAborted = true;
     this.sendingFilesError = message;
     setTimeout(() => {
@@ -214,6 +217,7 @@ export class FilesService {
         this.pathFileTree = this.fileTreeFromPath();
         this.title.setTitle(`${this.path.replace('root', 'Twój dysk').split('/')[this.path.replace('root', 'Twój dysk').split('/').length - 1]} - J\'Drive`);
         this.isLoading = false;
+        console.log('halo');
       },
       error: (err) => {
         console.error(err);
@@ -406,17 +410,16 @@ export class FilesService {
     formData.append('path', path);
     formData.append('newPath', newPath + (newPath.length ? "/" : "") + path.split('/').slice(-1));
 
-    console.log(formData.get('path'));
-    console.log(formData.get('newPath'));
-
     this.http.patch(`${this.url}/move`, formData, {
       headers: new HttpHeaders()
         .set('Authorization', 'Bearer ' + this.auth.getToken())
         .set('Accept', 'application/json')
     }).subscribe({
       next: () => {
+        console.log('halo');
+        
         this.getFileList();
-        this.showSuccessAlert("Przeniesiono " + path.split('/').slice(-1) + " do " + newPath);
+        this.showSuccessAlert("Przeniesiono " + path.split('/').slice(-1) + " do " + (newPath == '' ? 'Twój dysk' : newPath));
       },
       error: (err: HttpErrorResponse) => {
         this.showErrorAlert('Nie udało się przenieść zasobu');
